@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Speech2Text</string>
+    <string name="toggle_microphone">Microphone ON / OFF</string>
+    <string name="select_method">""</string>
+</resources>
