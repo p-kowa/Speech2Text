@@ -3,4 +3,10 @@
     <string name="toggle_microphone">Microphone ON / OFF</string>
     <string name="select_method">""</string>
     <string name="share_transcription">Share transcription</string>
+    <string name="error_microphone_permission_denied">Microphone permission denied - cannot start recording. Grant permission in settings.</string>
+    <string name="info_no_transcription_to_share">No transcription to share</string>
+    <string name="share_chooser_title">Share transcription via</string>
+    <string name="info_recording">Recording...</string>
+    <string name="info_not_recording">Not recording</string>
+    <string name="unknown_method_selected">Unknown method selected</string>
 </resources>

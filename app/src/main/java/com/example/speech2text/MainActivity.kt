@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
                 onDenied = {
-                    trTV.text = "Microphone permission denied - cannot start recording  grant permission in settings"
+                    trTV.text = getString(R.string.error_microphone_permission_denied)
                 }
             )
         }
@@ -144,18 +144,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 startActivity(android.content.Intent.createChooser(shareIntent, "Share transcription via"))
             } else {
-                tiTV.text = "No transcription to share"
+                tiTV.text = getString(R.string.info_no_transcription_to_share)
             }
         }
-
-
     }
     private fun startRecording(method: String) {
         when (method) {
             "Google" -> speechHelper.startListening(selectedLanguage)
             "Local Whisper" -> trTV.text = "Local Whisper coming soon..."
             "Vosk" -> voskHelper.start(selectedVoskModel)
-            else -> trTV.text = "Unknown method selected"
+            else -> trTV.text = getString(R.string.unknown_method_selected)
         }
     }
 
@@ -164,7 +162,7 @@ class MainActivity : AppCompatActivity() {
             "Google" -> speechHelper.stopListening()
             "Local Whisper" -> trTV.text = "Local Whisper coming soon..."
             "Vosk" -> voskHelper.stop()
-            else -> trTV.text = "Unknown method selected"
+            else -> trTV.text = getString(R.string.unknown_method_selected)
         }
     }
 
