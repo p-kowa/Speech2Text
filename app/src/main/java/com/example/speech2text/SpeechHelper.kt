@@ -2,6 +2,7 @@ package com.example.speech2text
 
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -22,12 +23,38 @@ class SpeechHelper(
     private var isListening = false
     private var shouldContinue = false // Flag for continuous recording
     private var currentLanguageCode = "de-DE" // Remember current language
-
     private var entireText : String = ""
+
+    // AudioManager to mute system sounds
+    private val audioManager: AudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var originalStreamVolume: Int = 0
 
     init {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
             setRecognitionListener(createRecognitionListener())
+        }
+    }
+
+    /**
+     * Mutes notification and system sounds to suppress beeps
+     */
+    private fun muteSystemSounds() {
+        try {
+            originalStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
+            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, 0)
+        } catch (_: Exception) {
+            // Ignore if we can't mute
+        }
+    }
+
+    /**
+     * Restores system sound volume
+     */
+    private fun restoreSystemSounds() {
+        try {
+            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, originalStreamVolume, 0)
+        } catch (_: Exception) {
+            // Ignore if we can't restore
         }
     }
 
@@ -43,6 +70,7 @@ class SpeechHelper(
         shouldContinue = true // Enable continuous recording
         currentLanguageCode = languageCode // Remember language
         isListening = true
+        muteSystemSounds() // Mute beeps
         onStatusChange("🎤 Starting recording...")
 
         speechRecognizer?.startListening(createRecognitionIntent())
@@ -56,6 +84,7 @@ class SpeechHelper(
         isListening = false
         entireText = "" // Reset text for next start
         speechRecognizer?.stopListening()
+        restoreSystemSounds() // Restore volume
         onStatusChange("⏹ Recording stopped")
     }
 
@@ -83,11 +112,17 @@ class SpeechHelper(
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, currentLanguageCode)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-            // Suppress beep sound and vibration
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 10000L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 10000L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 10000L)
+
+            // Extended silence thresholds to prevent frequent restarts
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 15000L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 15000L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 15000L)
+
+            // Various beep suppression flags (device-dependent)
             putExtra("android.speech.extra.DICTATION_MODE", true)
+            putExtra("android.speech.extras.AUDIO_INJECTION", false)
+            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, false)
+            putExtra("calling_package", context.packageName)
         }
     }
 
