@@ -8,8 +8,8 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 
 /**
- * Helper-Klasse für Google Speech-to-Text Recognition
- * Verwendet einfache Lambdas für Callbacks
+ * Helper class for Google Speech-to-Text Recognition
+ * Uses simple lambdas for callbacks
  */
 class SpeechHelper(
     private val context: Context,
@@ -19,7 +19,11 @@ class SpeechHelper(
 ) {
 
     private var speechRecognizer: SpeechRecognizer? = null
-    private var isListening = false  // Track ob wir aktiv zuhören
+    private var isListening = false
+    private var shouldContinue = false // Flag for continuous recording
+    private var currentLanguageCode = "de-DE" // Remember current language
+
+    private var entireText : String = ""
 
     init {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
@@ -28,45 +32,42 @@ class SpeechHelper(
     }
 
     /**
-     * Startet die Spracherkennung
+     * Starts speech recognition
      */
     fun startListening(languageCode: String = "de-DE") {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-            onError("Speech Recognition nicht verfügbar")
+            onError("Speech Recognition not available")
             return
         }
 
+        shouldContinue = true // Enable continuous recording
+        currentLanguageCode = languageCode // Remember language
         isListening = true
-        onStatusChange("🎤 Starte Aufnahme...")
+        onStatusChange("🎤 Starting recording...")
 
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode)
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-        }
-
-        speechRecognizer?.startListening(intent)
+        speechRecognizer?.startListening(createRecognitionIntent())
     }
 
     /**
-     * Stoppt die Spracherkennung
+     * Stops speech recognition
      */
     fun stopListening() {
+        shouldContinue = false // Disable continuous recording
         isListening = false
+        entireText = "" // Reset text for next start
         speechRecognizer?.stopListening()
-        onStatusChange("⏹ Aufnahme gestoppt")
+        onStatusChange("⏹ Recording stopped")
     }
 
     /**
-     * Bricht die Spracherkennung ab
+     * Cancels speech recognition
      */
     fun cancel() {
         speechRecognizer?.cancel()
     }
 
     /**
-     * Gibt Ressourcen frei
+     * Releases resources
      */
     fun destroy() {
         speechRecognizer?.destroy()
@@ -74,38 +75,68 @@ class SpeechHelper(
     }
 
     /**
-     * Erstellt den RecognitionListener
+     * Creates an intent for speech recognition with beep suppression
+     */
+    private fun createRecognitionIntent(): Intent {
+        return Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, currentLanguageCode)
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+            // Suppress beep sound and vibration
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 10000L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 10000L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 10000L)
+            putExtra("android.speech.extra.DICTATION_MODE", true)
+        }
+    }
+
+    /**
+     * Creates the RecognitionListener
      */
     private fun createRecognitionListener() = object : RecognitionListener {
         override fun onReadyForSpeech(params: Bundle?) {
-            onStatusChange("🎤 Bereit... Sprechen Sie jetzt!")
+            onStatusChange("🎤 Ready... Speak now!")
         }
 
         override fun onBeginningOfSpeech() {
-            onStatusChange("🎤 Höre zu...")
+            onStatusChange("🎤 Listening...")
         }
 
         override fun onRmsChanged(rmsdB: Float) {
-            // Optional: Audio-Level Visualisierung
+            // Optional: Audio level visualization
         }
 
         override fun onBufferReceived(buffer: ByteArray?) {
-            // Nicht benötigt
+            // Not needed
         }
 
         override fun onEndOfSpeech() {
-            onStatusChange("⏳ Verarbeite...")
+            onStatusChange("⏳ Processing...")
         }
 
         override fun onError(error: Int) {
-            // ERROR_CLIENT wird beim manuellen Stoppen ausgelöst - ignorieren!
-            if (error == SpeechRecognizer.ERROR_CLIENT && !isListening) {
+            // ERROR_CLIENT is triggered when manually stopping - ignore it!
+            if (error == SpeechRecognizer.ERROR_CLIENT && !shouldContinue) {
                 return
             }
 
             isListening = false
             val errorMessage = getErrorMessage(error)
-            onError("❌ $errorMessage")
+
+            // Automatically restart on certain errors
+            if (shouldContinue && (error == SpeechRecognizer.ERROR_NO_MATCH ||
+                        error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT)) {
+                // Short delay before restart
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    if (shouldContinue) {
+                        isListening = true
+                        speechRecognizer?.startListening(createRecognitionIntent())
+                    }
+                }, 100)
+            } else {
+                onError("❌ $errorMessage")
+            }
         }
 
         override fun onResults(results: Bundle?) {
@@ -114,9 +145,19 @@ class SpeechHelper(
             val text = matches?.firstOrNull() ?: ""
 
             if (text.isNotEmpty()) {
-                onResult(text)
-            } else {
-                onError("Kein Text erkannt")
+                entireText += if (entireText.isEmpty()) text else " $text"
+                onResult(entireText)
+            }
+
+            // Automatically restart when shouldContinue is active
+            if (shouldContinue) {
+                // Short delay before restart (100ms)
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    if (shouldContinue) { // Check again in case stopped in the meantime
+                        isListening = true
+                        speechRecognizer?.startListening(createRecognitionIntent())
+                    }
+                }, 100)
             }
         }
 
@@ -130,30 +171,30 @@ class SpeechHelper(
         }
 
         override fun onEvent(eventType: Int, params: Bundle?) {
-            // Nicht benötigt
+            // Not needed
         }
     }
 
     /**
-     * Konvertiert Error-Codes zu lesbaren Nachrichten
+     * Converts error codes to readable messages
      */
     private fun getErrorMessage(error: Int): String {
         return when (error) {
-            SpeechRecognizer.ERROR_AUDIO -> "Audio-Aufnahme Fehler"
-            SpeechRecognizer.ERROR_CLIENT -> "Verbindung getrennt"
-            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Mikrofon-Berechtigung fehlt"
-            SpeechRecognizer.ERROR_NETWORK -> "Netzwerk-Fehler"
-            SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Netzwerk-Timeout"
-            SpeechRecognizer.ERROR_NO_MATCH -> "Keine Übereinstimmung gefunden"
-            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer beschäftigt"
-            SpeechRecognizer.ERROR_SERVER -> "Server-Fehler"
-            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Kein Audio erkannt"
-            else -> "Unbekannter Fehler: $error"
+            SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
+            SpeechRecognizer.ERROR_CLIENT -> "Connection disconnected"
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Microphone permission missing"
+            SpeechRecognizer.ERROR_NETWORK -> "Network error"
+            SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
+            SpeechRecognizer.ERROR_NO_MATCH -> "No match found"
+            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy"
+            SpeechRecognizer.ERROR_SERVER -> "Server error"
+            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No audio detected"
+            else -> "Unknown error: $error"
         }
     }
 
     /**
-     * Prüft ob Speech Recognition verfügbar ist
+     * Checks if speech recognition is available
      */
     fun isRecognitionAvailable(): Boolean {
         return SpeechRecognizer.isRecognitionAvailable(context)

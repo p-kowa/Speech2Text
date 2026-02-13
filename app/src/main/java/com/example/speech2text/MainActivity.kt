@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -20,13 +21,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var micToggle : ToggleButton
     private lateinit var methodSelector : AutoCompleteTextView
     private lateinit var trTV : TextView
+    private lateinit var tiTV : TextView
     private lateinit var rgLanguage : RadioGroup
     private lateinit var speechHelper: SpeechHelper
+
+    private lateinit var shareButton : ImageButton
 
     private lateinit var voskHelper: VoskHelper
     private val permissionManager = PermissionManager(activityResultRegistry, this)
 
-    // Aktuell ausgewählte Sprache
+    // Currently selected language
     private val selectedLanguage: String
         get() {
             val selectedId = rgLanguage.checkedRadioButtonId
@@ -37,7 +41,7 @@ class MainActivity : AppCompatActivity() {
             return languageCodes.getOrElse(index) { "de-DE" }
         }
 
-    // Aktuell ausgewähltes Vosk-Modell (basierend auf dem gleichen Index wie selectedLanguage)
+    // Currently selected Vosk model (based on the same index as selectedLanguage)
     private val selectedVoskModel: String
         get() {
             val selectedId = rgLanguage.checkedRadioButtonId
@@ -62,7 +66,9 @@ class MainActivity : AppCompatActivity() {
         micToggle = findViewById(R.id.microSwitch)
         methodSelector = findViewById(R.id.spMethod)
         trTV = findViewById(R.id.tvResult)
+        tiTV = findViewById(R.id.tvInfo)
         rgLanguage = findViewById(R.id.rgLanguage)
+        shareButton = findViewById(R.id.btnShare)
 
         permissionManager.register("audio_permission_key")
         @Suppress("DEPRECATION")
@@ -71,9 +77,10 @@ class MainActivity : AppCompatActivity() {
         voskHelper = VoskHelper(
             context = this,
             onResult = { text -> trTV.text = text },
-            onStatus = { status -> trTV.text = status },
+            onPartialResult = { text -> tiTV.text = text },
+            onStatus = { status -> tiTV.text = status },
             onError = { error ->
-                trTV.text = error
+                tiTV.text = error
                 micToggle.isChecked = false
                 methodSelector.isEnabled = true
             }
@@ -87,16 +94,16 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        // RadioButtons dynamisch aus Array erstellen
+        // Dynamically create RadioButtons from array
         setupLanguageRadioButtons()
 
-        // SpeechHelper mit Lambda-Callbacks (UI-Logik bleibt in Helper!)
+        // SpeechHelper with Lambda callbacks (UI logic stays in Helper!)
         speechHelper = SpeechHelper(
             context = this,
-            onStatusChange = { status -> trTV.text = status },
+            onStatusChange = { status -> tiTV.text = status },
             onResult = { text -> trTV.text = text },
             onError = { error ->
-                trTV.text = error
+                tiTV.text = error
                 micToggle.isChecked = false
                 methodSelector.isEnabled = true
             }
@@ -110,11 +117,13 @@ class MainActivity : AppCompatActivity() {
                         true -> {
                             startRecording(method)
                             methodSelector.isEnabled=false
+                            enableLanguageRadioButtons(false)
 
                         }
                         false -> {
                             stopRecording(method)
                             methodSelector.isEnabled=true
+                            enableLanguageRadioButtons(true)
 
                         }
                     }
@@ -123,6 +132,20 @@ class MainActivity : AppCompatActivity() {
                     trTV.text = "Microphone permission denied - cannot start recording  grant permission in settings"
                 }
             )
+        }
+
+        shareButton.setOnClickListener {
+            val textToShare = trTV.text.toString()
+            if (textToShare.isNotBlank()) {
+                val shareIntent = android.content.Intent().apply {
+                    action = android.content.Intent.ACTION_SEND
+                    putExtra(android.content.Intent.EXTRA_TEXT, textToShare)
+                    type = "text/plain"
+                }
+                startActivity(android.content.Intent.createChooser(shareIntent, "Share transcription via"))
+            } else {
+                tiTV.text = "No transcription to share"
+            }
         }
 
 
@@ -154,10 +177,17 @@ class MainActivity : AppCompatActivity() {
                 text = language
                 textSize = 16f
                 setTextColor(ContextCompat.getColor(context, R.color.white))
-                isChecked = (index == 0) // Deutsch ist vorausgewählt
+                isChecked = (index == 0) // German is preselected
                 setPadding(0, 8, 32, 8)
             }
             rgLanguage.addView(radioButton)
+        }
+    }
+
+    private fun enableLanguageRadioButtons(enabled: Boolean) {
+        for (i in 0 until rgLanguage.childCount) {
+            val child = rgLanguage.getChildAt(i)
+            child.isEnabled = enabled
         }
     }
 

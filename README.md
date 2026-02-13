@@ -1,101 +1,394 @@
-# Speech2Text (Android)
+# Speech2Text - Android Speech Recognition App
 
-A small Android demo app to convert speech to text using multiple backends. The app provides a simple UI to choose a recognition method and a language, start and stop recording, and display recognition results.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg)](https://kotlinlang.org)
 
-Supported recognition methods (UI):
-- Google (cloud / Android SpeechRecognizer)
-- Local Whisper (placeholder — coming soon)
-- Vosk (offline speech recognition using Vosk models)
+A modern Android application that provides multiple speech-to-text recognition options with **continuous listening capability**. The app supports both online (Google) and offline (Vosk) speech recognition with seamless text concatenation.
 
-Notes about this repository
-- This project was developed in Android Studio and uses Gradle Kotlin DSL (build.gradle.kts).
-- The repository's `.gitignore` already excludes typical Android local files such as `local.properties` and `/build` directories. Inspect `gradle.properties` for secrets before publishing.
+## ✨ Features
 
-Requirements
-- Android Studio (recommended) or command-line Gradle
-- JDK 11+ (as required by your Android Gradle Plugin)
-- An Android device or emulator (API level matching project configuration)
+### 🎤 Multiple Recognition Methods
+- **Google Speech Recognition** - Cloud-based, high accuracy (requires internet)
+- **Vosk** - Offline, local recognition (no internet required)
+- **Local Whisper** - Planned for future release
 
-Quick start (Android Studio)
-1. Open Android Studio and choose "Open" -> select the repository folder (the project root).
-2. Let Android Studio sync and download Gradle dependencies.
-3. Run the app on an emulator or device via the Run button.
+### 🔄 Continuous Recording
+- **Unlimited duration** - Automatic restart after each recognition cycle
+- **Seamless text concatenation** - All recognized text is appended continuously
+- **Smart error recovery** - Auto-restart on timeout or no-match errors
+- **No interruption** - Keep speaking naturally without manual restarts
 
-Quick start (command line / PowerShell on Windows)
+### 🌍 Multi-Language Support
+- German (de-DE)
+- English (en-US)
+- Spanish (es-ES)
+- French (fr-FR)
+- Italian (it-IT)
+- Portuguese (pt-PT)
+
+### 🎨 Modern UI
+- Material Design 3
+- Edge-to-edge display
+- Real-time status updates
+- Partial results preview
+- Toggle-based recording control
+
+## 📋 Requirements
+
+- **Android Studio** (recommended) or command-line Gradle
+- **JDK 11+** (as required by Android Gradle Plugin)
+- **Android SDK 26** (Android 8.0) or higher
+- **Internet connection** (for Google Speech Recognition)
+- **Microphone permission**
+
+## 🚀 Quick Start
+
+### Using Android Studio
+
+1. Open Android Studio and choose **File → Open**
+2. Select the repository folder (project root)
+3. Let Android Studio sync and download Gradle dependencies
+4. Run the app on an emulator or device via the **Run** button
+
+### Using Command Line (PowerShell on Windows)
+
 ```powershell
 cd 'C:\Daten\Android\Speech2Text'
+
 # Build debug APK
 ./gradlew assembleDebug
-# Install to a connected device (requires adb and a connected device)
+
+# Install to a connected device (requires adb)
 ./gradlew installDebug
 ```
 
-If you are on Windows and the wrapper is `gradlew.bat`, replace `./gradlew` with `\gradlew.bat` or run `.\gradlew.bat assembleDebug` from PowerShell.
+> **Note:** On Windows, if the wrapper is `gradlew.bat`, use `.\gradlew.bat` instead of `./gradlew`
 
-Usage
-1. Select a recognition method from the dropdown (Google, Local Whisper, Vosk).
-2. Choose a language using the radio buttons.
-3. Toggle the microphone button to start/stop recognition; results and status messages are displayed in the main text view.
+## 📱 Usage
 
-Vosk models
-- Vosk uses offline models. The app references model names from `R.array.vosk_models` and loads models via the app's `VoskHelper`.
-- Download the appropriate Vosk model for the language you want to support (check the Vosk website or GitHub for model downloads). Follow the integration instructions in `VoskHelper` or place the model files in the location expected by your implementation (for example, an `assets` folder or app internal storage). Exact placement depends on how `VoskHelper` is implemented.
+1. **Select Recognition Method** - Choose from the dropdown (Google, Vosk, or Local Whisper)
+2. **Choose Language** - Select your preferred language using the radio buttons
+3. **Start Recording** - Toggle the microphone button to start
+4. **Keep Speaking** - The app will continuously transcribe without stopping
+5. **Stop Recording** - Toggle the microphone button again to stop
 
-Security & sensitive files
-- Ensure you do NOT commit secrets (API keys, keystore passwords, service account keys) to the repository.
-- `local.properties` is already in `.gitignore` (should remain untracked). If you accidentally committed sensitive files, remove them from the index before pushing:
+### Real-time Feedback
 
-```powershell
-cd 'C:\Daten\Android\Speech2Text'
-# Example: remove a tracked local.properties (if it was committed)
-git rm --cached local.properties
-# Remove or rotate any secrets stored in gradle.properties if necessary
+- **Partial results** - See what's being transcribed in real-time (while speaking)
+- **Status updates** - Visual indicators show recording state:
+  - 🎤 Bereit... Sprechen Sie jetzt! (Ready)
+  - 🎤 Höre zu... (Listening)
+  - ⏳ Verarbeite... (Processing)
+  - ⏹ Aufnahme gestoppt (Stopped)
+
+## 🏗️ Architecture
+
+### Project Structure
+
+```
+Speech2Text/
+├── app/
+│   ├── src/
+│   │   └── main/
+│   │       ├── java/com/example/speech2text/
+│   │       │   ├── MainActivity.kt           # Main UI controller
+│   │       │   ├── SpeechHelper.kt           # Google Speech Recognition
+│   │       │   ├── VoskHelper.kt             # Offline Vosk recognition
+│   │       │   └── PermissionManager.kt      # Permission handling
+│   │       ├── res/
+│   │       │   ├── layout/
+│   │       │   │   └── activity_main.xml     # Main UI layout
+│   │       │   └── values/
+│   │       │       ├── strings.xml           # Localized strings
+│   │       │       └── themes.xml            # App theming
+│   │       └── AndroidManifest.xml
+│   └── build.gradle.kts
+├── gradle/
+│   ├── libs.versions.toml                     # Dependency versions
+│   └── wrapper/
+└── build.gradle.kts
 ```
 
-Publishing to GitHub
-- If you get `fatal: repository 'https://github.com/USER/REPO.git/' not found`, the remote repository does not exist or the URL is incorrect.
-- Create a new repository on GitHub (https://github.com/new) or use the GitHub CLI to create one.
+### Key Components
 
-Add remote and push (HTTPS)
+#### `SpeechHelper.kt` - Continuous Google Speech Recognition
+The heart of the continuous listening feature:
+
+```kotlin
+class SpeechHelper(
+    context: Context,
+    onStatusChange: (String) -> Unit,
+    onResult: (String) -> Unit,
+    onError: (String) -> Unit
+)
+```
+
+**Features:**
+- ✅ Automatic restart after each recognition cycle
+- ✅ Text concatenation across multiple sessions
+- ✅ Smart error handling with auto-recovery
+- ✅ Language switching support
+- ✅ Partial results for real-time feedback
+
+**How it works:**
+1. User starts recording → `shouldContinue = true`
+2. SpeechRecognizer starts listening (Google API)
+3. When speech is detected → `onResults()` is called
+4. Text is appended to `entireText` variable
+5. If `shouldContinue == true`, automatically restart after 100ms
+6. Process repeats until user manually stops
+
+This overcomes the typical 10-second limitation of Google Speech Recognition!
+
+#### `VoskHelper.kt` - Offline Speech Recognition
+```kotlin
+class VoskHelper(
+    context: Context,
+    onResult: (String) -> Unit,
+    onStatus: (String) -> Unit,
+    onError: (String) -> Unit
+)
+```
+
+**Features:**
+- ✅ No internet required
+- ✅ Privacy-focused (all processing on-device)
+- ✅ Multiple language models supported
+- ✅ Real-time transcription
+
+#### `PermissionManager.kt` - Runtime Permissions
+```kotlin
+class PermissionManager(
+    registry: ActivityResultRegistry,
+    lifecycleOwner: LifecycleOwner
+)
+```
+
+**Features:**
+- ✅ Microphone permission handling
+- ✅ Modern Activity Result API
+- ✅ User-friendly permission requests
+
+#### `MainActivity.kt` - UI Controller
+Manages the user interface and coordinates between helpers:
+- Method selection (Google/Vosk/Whisper)
+- Language selection with dynamic radio buttons
+- Recording control
+- Result display
+
+## 🔧 Technical Details
+
+### Dependencies
+
+```kotlin
+// Core Android
+implementation(libs.androidx.core.ktx)
+implementation(libs.androidx.appcompat)
+implementation(libs.material)
+implementation(libs.androidx.activity)
+implementation(libs.androidx.constraintlayout)
+
+// Vosk (Offline Speech Recognition)
+implementation(libs.vosk)
+```
+
+See `gradle/libs.versions.toml` for specific versions.
+
+### Required Permissions
+
+```xml
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+### Gradle Configuration
+
+This project uses **Gradle Kotlin DSL** (`build.gradle.kts`) for type-safe build scripts.
+
+```kotlin
+android {
+    compileSdk = 35
+    defaultConfig {
+        minSdk = 26
+        targetSdk = 35
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+```
+
+## 🎯 Vosk Models
+
+Vosk requires offline models for each language. The app references model names from `R.array.vosk_models`.
+
+### Download Models
+
+1. Visit [Vosk Models](https://alphacephei.com/vosk/models)
+2. Download the appropriate model for your language:
+   - `vosk-model-small-de-0.15` (German)
+   - `vosk-model-small-en-us-0.15` (English)
+   - etc.
+3. Place model files in your app's internal storage or assets folder
+4. Update `VoskHelper` to point to the correct model location
+
+### Model Integration
+
+```kotlin
+// Example: Loading a model
+val model = Model("/path/to/vosk-model-small-de-0.15")
+val recognizer = Recognizer(model, 16000.0f)
+```
+
+Check `VoskHelper.kt` for the complete implementation.
+
+## 🔒 Security & Sensitive Files
+
+⚠️ **Important:** Do NOT commit secrets to the repository!
+
+- `local.properties` - Already in `.gitignore` (contains SDK paths)
+- API keys, keystore passwords, service account keys - NEVER commit these
+- Review `gradle.properties` before publishing
+
+### If you accidentally committed secrets:
+
 ```powershell
 cd 'C:\Daten\Android\Speech2Text'
-git remote add origin https://github.com/<USERNAME>/Speech2Text.git
+git rm --cached local.properties
+git rm --cached gradle.properties  # if it contains secrets
+# Rotate/invalidate the exposed secrets immediately
+git commit -m "Remove sensitive files"
+```
+
+## 🚢 Publishing to GitHub
+
+### Create Repository on GitHub
+
+1. Go to [GitHub](https://github.com/new) and create a new repository
+2. Name it `Speech2Text`
+3. Choose public or private
+4. Do NOT initialize with README (we already have one)
+
+### Add Remote and Push (HTTPS)
+
+```powershell
+cd 'C:\Daten\Android\Speech2Text'
+git remote add origin https://github.com/<YOUR_USERNAME>/Speech2Text.git
 git branch -M main
 git push -u origin main
 ```
 
-Notes about authentication
-- GitHub no longer accepts account passwords for Git operations over HTTPS. Use a Personal Access Token (PAT) as the password or configure SSH keys and push over SSH.
-- To create a PAT: GitHub > Settings > Developer settings > Personal access tokens. Grant `repo` scope for private repos or `public_repo` for public-only pushes.
+### Authentication
 
-Using GitHub from Android Studio
-- Use: VCS > Import into Version Control > Share Project on GitHub. Android Studio can create the remote and push for you after you sign in.
+GitHub no longer accepts passwords for Git operations. Use one of these methods:
 
-Optional: create repo via GitHub CLI (if you install `gh`)
+**Option 1: Personal Access Token (PAT)**
+1. Go to GitHub → Settings → Developer settings → Personal access tokens
+2. Generate new token with `repo` scope
+3. Use the token as your password when pushing
+
+**Option 2: SSH Keys**
 ```powershell
-# Install via winget (Windows)
-winget install --id GitHub.cli -e --source winget
-# Login and create repo from the project folder
-gh auth login
-cd 'C:\Daten\Android\Speech2Text'
-gh repo create <USERNAME>/Speech2Text --public --source=. --remote=origin --push
+# Generate SSH key
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+# Add to GitHub: Settings → SSH and GPG keys → New SSH key
+
+# Use SSH remote instead
+git remote set-url origin git@github.com:<YOUR_USERNAME>/Speech2Text.git
 ```
 
-Troubleshooting
-- Build fails on missing SDK/NDK: open Android Studio SDK Manager, install the required SDK platform and build-tools.
-- Vosk issues: ensure the model is compatible with the Vosk library version used and placed where `VoskHelper` expects it.
-- Permission denied for microphone: grant RECORD_AUDIO permission in settings or accept the runtime prompt shown by the app.
+**Option 3: GitHub CLI**
+```powershell
+# Install GitHub CLI
+winget install --id GitHub.cli
 
-License & contributing
+# Login and create repo
+gh auth login
+cd 'C:\Daten\Android\Speech2Text'
+gh repo create <YOUR_USERNAME>/Speech2Text --public --source=. --remote=origin --push
+```
+
+### Using Android Studio
+
+1. Go to **VCS → Share Project on GitHub**
+2. Sign in to your GitHub account
+3. Android Studio will create the repo and push for you
+
+## 🐛 Troubleshooting
+
+### Build Fails - Missing SDK/NDK
+**Solution:** Open Android Studio SDK Manager and install required SDK platform and build-tools
+
+### Vosk Recognition Not Working
+**Solution:** Ensure model is compatible with Vosk library version and placed correctly
+
+### Permission Denied for Microphone
+**Solution:** Grant `RECORD_AUDIO` permission in Android settings or accept runtime prompt
+
+### Google Speech Recognition Stops After 10 Seconds
+**Solution:** This is expected behavior - the app automatically restarts it! If it's not restarting, check that `shouldContinue` flag is set correctly in `SpeechHelper.kt`
+
+### Text Not Appending
+**Solution:** Verify that `entireText` variable is being updated in `onResults()` method
+
+## 📝 Known Issues
+
+- Google Speech Recognition requires internet connection
+- Some devices may have vendor-specific speech recognition limitations
+- Background recording may be restricted on Android 12+ (Doze mode)
+- First recognition cycle may have slight delay while Google API initializes
+
+## 🚀 Future Enhancements
+
+- [ ] Local Whisper integration
+- [ ] Export transcribed text to file (.txt, .pdf)
+- [ ] Voice activity detection visualization
+- [ ] Custom vocabulary support
+- [ ] Punctuation restoration
+- [ ] Speaker diarization (multi-speaker detection)
+- [ ] Dark mode support
+- [ ] Text editing capabilities
+- [ ] History of previous transcriptions
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👤 Author
+
+Created with ❤️ using Kotlin and Android
+
+## 🙏 Acknowledgments
+
+- [Vosk](https://alphacephei.com/vosk/) - Offline speech recognition
+- [Google Speech Recognition API](https://developer.android.com/reference/android/speech/SpeechRecognizer) - Cloud-based recognition
+- [Material Design 3](https://m3.material.io/) - UI components and guidelines
+- Android Open Source Project
+
+## 📞 Support
+
+If you find this project useful, please give it a ⭐️!
+
+For bugs, feature requests, or questions:
+- Open an issue on [GitHub Issues](https://github.com/<YOUR_USERNAME>/Speech2Text/issues)
+- Check existing issues before creating a new one
+
+---
+
+**Made with ❤️ using Kotlin and Android**
 - Add a `LICENSE` file (e.g. MIT) if you want this project to be open-source.
 - Add a `CONTRIBUTING.md` if you plan to accept contributions. Include build steps and code style guidelines.
 
-Contact / Notes
-- Local Whisper is listed in the UI but not implemented in the provided code; the app shows a placeholder message.
-- If you want, I can also create a `LICENSE` and a short `CONTRIBUTING.md`, or help you create a GitHub repo and push the project from here.
-
-Enjoy! If you want me to customize the README (add badges, screenshots, or CI instructions), tell me what you prefer.
-
-License
-
-This project is licensed under the MIT License — see the `LICENSE` file for details.
+**Made with ❤️ using Kotlin and Android**

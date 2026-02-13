@@ -14,7 +14,7 @@ class PermissionManager(
 ) {
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
-    // Zwei "Parkplätze" für unseren Code
+    // Two "parking spots" for our callbacks
     private var onGrantedCallback: (() -> Unit)? = null
     private var onDeniedCallback: (() -> Unit)? = null
 
@@ -26,7 +26,7 @@ class PermissionManager(
             if (isGranted) {
                 onGrantedCallback?.invoke()
             } else {
-                // JETZT weiß das Tool, was im Fehlerfall zu tun ist!
+                // NOW the tool knows what to do in case of error!
                 onDeniedCallback?.invoke()
             }
         }
@@ -34,7 +34,7 @@ class PermissionManager(
 
     fun checkAudioPermission(
         onGranted: () -> Unit,
-        onDenied: () -> Unit // Neu hinzugefügt
+        onDenied: () -> Unit // Newly added
     ) {
         this.onGrantedCallback = onGranted
         this.onDeniedCallback = onDenied
