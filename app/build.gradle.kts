@@ -15,8 +15,23 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+		externalNativeBuild {
+            cmake {
+                cppFlags += ""
+            }
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // NDK configuration for Whisper.cpp
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
+    }
+	externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
     }
 
     buildTypes {
@@ -44,7 +59,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation("com.alphacephei:vosk-android:0.3.47")
-    testImplementation(libs.junit)
+	testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
