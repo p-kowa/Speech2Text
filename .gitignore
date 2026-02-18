@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Whisper.cpp submodule (managed separately)
+app/src/main/cpp/whisper.cpp/
+
