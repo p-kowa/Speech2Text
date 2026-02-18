@@ -18,4 +18,8 @@
     <color name="taffelGruen">#009688</color>
     <color name="colorWhite">#ffffff</color>
     <color name="startingBlue">#3F51B5</color>
+    <color name="blue">#2196F3</color>
+    <color name="red">#F44336</color>
+    <color name="light_grey">#BEBEBE</color>
+    <color name="editTextBackground">#E0FFFFFF</color>
 </resources>

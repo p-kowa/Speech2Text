@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+id/activity_modelhelper"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@drawable/background_shape"
+android:orientation="vertical"
+android:padding="16dp">
+
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/model_source_label"
+    android:textStyle="bold" />
+
+<EditText
+    android:inputType="textUri"
+    android:labelFor="@id/activity_modelhelper"
+    android:hint="@string/model_url_hint"
+    android:background="@color/blueDarker"
+    android:padding="12dp"
+    android:layout_marginTop="24dp"
+    android:id="@+id/et_url"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:importantForAutofill="no"
+    android:text="@string/model_url"
+    android:textSize="16sp"
+    android:textStyle="italic"
+    android:layout_gravity="start" />
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginTop="8dp"
+    android:weightSum="2">
+
+    <Button
+        android:id="@+id/btn_get"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginEnd="4dp"
+        android:text="@string/btn_load_models" />
+
+    <Button
+        android:id="@+id/btn_save_model"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="4dp"
+        android:enabled="false"
+        android:text="@string/btn_save_text" />
+</LinearLayout>
+
+<View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:layout_marginVertical="16dp"
+    android:background="?android:attr/listDivider" />
+
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/available_models"
+    android:textStyle="bold" />
+
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/rv_models"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:layout_marginTop="8dp" />
+
+
+</LinearLayout>

@@ -15,9 +15,13 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-		externalNativeBuild {
+        externalNativeBuild {
             cmake {
                 cppFlags += ""
+                arguments += listOf(
+                    "-DCMAKE_BUILD_TYPE=Release",
+                    "-DANDROID_STL=c++_shared"
+                )
             }
         }
 
@@ -41,6 +45,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            externalNativeBuild {
+                cmake {
+                    arguments += listOf(
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCMAKE_CXX_FLAGS_RELEASE=-O3 -DNDEBUG -ffast-math -fno-finite-math-only"
+                    )
+                }
+            }
         }
     }
     compileOptions {

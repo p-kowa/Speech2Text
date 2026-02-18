@@ -20,7 +20,7 @@ class VoskHelper(
     private var model: Model? = null
     private var currentModelName: String? = null
 
-    private var entireText : String = ""
+    var entireText : String = ""
 
     fun start(modelName: String) {
 

@@ -1,6 +1,11 @@
 package com.example.speech2text
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.GestureDetector
+import android.view.Menu
+import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
@@ -8,17 +13,21 @@ import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
-import android.widget.ToggleButton
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlin.math.abs
+import android.content.Context
+import android.widget.Toast
+import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var micToggle : ToggleButton
+    private lateinit var micToggle : FloatingActionButton
     private lateinit var methodSelector : AutoCompleteTextView
     private lateinit var trTV : TextView
     private lateinit var tiTV : TextView
@@ -27,8 +36,20 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var shareButton : ImageButton
 
+    private lateinit var whisperHelper: WhisperHelper
+
     private lateinit var voskHelper: VoskHelper
     private val permissionManager = PermissionManager(activityResultRegistry, this)
+
+    var modelPath : String =""
+
+
+
+    // Track recording state
+    private var isRecording = false
+
+    // Gesture detector for swipe actions (initialized in onCreate)
+    private lateinit var gestureDetector: GestureDetector
 
     // Currently selected language
     private val selectedLanguage: String
@@ -39,6 +60,21 @@ class MainActivity : AppCompatActivity() {
             val index = rgLanguage.indexOfChild(findViewById(selectedId))
             val languageCodes = resources.getStringArray(R.array.language_codes)
             return languageCodes.getOrElse(index) { "de-DE" }
+        }
+
+    // Whisper uses 2-letter ISO codes (de, en, es) instead of Android's format (de-DE, en-US)
+    private val selectedWhisperLanguage: String
+        get() {
+            val androidCode = selectedLanguage
+            return when {
+                androidCode.startsWith("de") -> "de"
+                androidCode.startsWith("en") -> "en"
+                androidCode.startsWith("es") -> "es"
+                androidCode.startsWith("fr") -> "fr"
+                androidCode.startsWith("it") -> "it"
+                androidCode.startsWith("pl") -> "pl"
+                else -> "en" // Fallback to English
+            }
         }
 
     // Currently selected Vosk model (based on the same index as selectedLanguage)
@@ -52,6 +88,7 @@ class MainActivity : AppCompatActivity() {
             return voskModels.getOrElse(index) { "vosk-model-small-de-0.15" }
         }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -62,6 +99,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         val methods = resources.getStringArray(R.array.methods)
         micToggle = findViewById(R.id.microSwitch)
         methodSelector = findViewById(R.id.spMethod)
@@ -70,9 +108,58 @@ class MainActivity : AppCompatActivity() {
         rgLanguage = findViewById(R.id.rgLanguage)
         shareButton = findViewById(R.id.btnShare)
 
+        val sharedPrefs = this.getSharedPreferences("ModelSettings", Context.MODE_PRIVATE)
+        modelPath = sharedPrefs.getString("selected_model_path", "") ?: ""
+
         permissionManager.register("audio_permission_key")
         @Suppress("DEPRECATION")
         window.navigationBarColor = getColor(R.color.blueLight)
+        window.statusBarColor = getColor(R.color.blueLight)
+        setSupportActionBar(toolbar)
+        // Initialize FAB icon
+        updateFabIcon()
+
+        // Initialize gesture detector for swipe actions
+        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            private val SWIPE_THRESHOLD = 100 // Minimum distance in pixels
+            private val SWIPE_VELOCITY_THRESHOLD = 100 // Minimum velocity
+
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float
+            ): Boolean {
+                val diffX = e2.x - (e1?.x ?: 0f)
+
+                if (abs(diffX) > SWIPE_THRESHOLD && abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                    if (diffX > 0) {
+                        // Swipe RIGHT - Clear text
+                        trTV.text = ""
+                        speechHelper.entireText = ""
+                        voskHelper.entireText = ""
+                        whisperHelper.entireText = ""
+                        tiTV.text = getString(R.string.text_cleared)
+                    } else {
+                        // Swipe LEFT - Share text
+                        val textToShare = trTV.text.toString()
+                        if (textToShare.isNotBlank()) {
+                            val shareIntent = android.content.Intent().apply {
+                                action = android.content.Intent.ACTION_SEND
+                                putExtra(android.content.Intent.EXTRA_TEXT, textToShare)
+                                type = "text/plain"
+                            }
+                            startActivity(android.content.Intent.createChooser(shareIntent, getString(R.string.share_chooser_title)))
+                            tiTV.text = getString(R.string.sharing_text)
+                        } else {
+                            tiTV.text = getString(R.string.info_no_transcription_to_share)
+                        }
+                    }
+                    return true
+                }
+                return false
+            }
+        })
 
         voskHelper = VoskHelper(
             context = this,
@@ -81,14 +168,24 @@ class MainActivity : AppCompatActivity() {
             onStatus = { status -> tiTV.text = status },
             onError = { error ->
                 tiTV.text = error
-                micToggle.isChecked = false
+                isRecording = false
+                updateFabIcon()
                 methodSelector.isEnabled = true
             }
         )
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, methods)
+        // Benutzerdefinierten Adapter mit dunklem Hintergrund für bessere Lesbarkeit
+        val adapter = ArrayAdapter(this, R.layout.dropdown_item, methods)
 
         methodSelector.setAdapter(adapter)
+
+        // Setze Dropdown-Hintergrund programmatisch (funktioniert auf allen Themes)
+        methodSelector.setDropDownBackgroundDrawable(
+            ContextCompat.getDrawable(this, android.R.color.transparent)?.apply {
+                setTint(ContextCompat.getColor(this@MainActivity, R.color.blueDarker))
+            }
+        )
+
         if (methods.isNotEmpty()) {
             methodSelector.setText(methods[0], false)
         }
@@ -104,7 +201,21 @@ class MainActivity : AppCompatActivity() {
             onResult = { text -> trTV.text = text },
             onError = { error ->
                 tiTV.text = error
-                micToggle.isChecked = false
+                isRecording = false
+                updateFabIcon()
+                methodSelector.isEnabled = true
+            }
+        )
+
+        whisperHelper = WhisperHelper(
+            context = this,
+            onStatus = { status -> tiTV.text = status },
+            onResult = { text -> trTV.text = text },
+            onPartialResult = { text -> tiTV.text = text },
+            onError = { error ->
+                tiTV.text = error
+                isRecording = false
+                updateFabIcon()
                 methodSelector.isEnabled = true
             }
         )
@@ -113,20 +224,20 @@ class MainActivity : AppCompatActivity() {
             val method = methodSelector.text.toString()
             permissionManager.checkAudioPermission(
                 onGranted = {
-                    when (micToggle.isChecked) {
+                    isRecording = !isRecording
+                    when (isRecording) {
                         true -> {
                             startRecording(method)
-                            methodSelector.isEnabled=false
+                            methodSelector.isEnabled = false
                             enableLanguageRadioButtons(false)
-
                         }
                         false -> {
                             stopRecording(method)
-                            methodSelector.isEnabled=true
+                            methodSelector.isEnabled = true
                             enableLanguageRadioButtons(true)
-
                         }
                     }
+                    updateFabIcon()
                 },
                 onDenied = {
                     trTV.text = getString(R.string.error_microphone_permission_denied)
@@ -147,11 +258,52 @@ class MainActivity : AppCompatActivity() {
                 tiTV.text = getString(R.string.info_no_transcription_to_share)
             }
         }
+
+        // Setup swipe gestures on the transcription TextView
+        trTV.setOnTouchListener { view, event ->
+            val handled = gestureDetector.onTouchEvent(event)
+
+            if (!handled && event.action == MotionEvent.ACTION_UP) {
+                view.performClick()
+            }
+            true // Consume the event
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.s2t_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        try {
+            if (item.itemId == R.id.mSetup) {
+                val intent = android.content.Intent(this, ModelHelper::class.java)
+                startActivity(intent)
+            }
+
+        } catch (ex: Exception) {
+            tiTV.text = getString(R.string.error_str, ex.message ?: "Unknown error")
+        }
+        return true
     }
     private fun startRecording(method: String) {
         when (method) {
             "Google" -> speechHelper.startListening(selectedLanguage)
-            "Local Whisper" -> trTV.text = "Local Whisper coming soon..."
+            "Whisper" -> {
+                if (modelPath.isEmpty()) {
+                    tiTV.text = getString(R.string.no_model_selected)
+                    val intent = android.content.Intent(this, ModelHelper::class.java)
+                    startActivity(intent)
+                    isRecording = false
+                    updateFabIcon()
+                    methodSelector.isEnabled = true
+                } else {
+                    whisperHelper.setModelFile(modelPath)
+                    whisperHelper.start(selectedWhisperLanguage)
+                }
+            }
             "Vosk" -> voskHelper.start(selectedVoskModel)
             else -> trTV.text = getString(R.string.unknown_method_selected)
         }
@@ -160,7 +312,7 @@ class MainActivity : AppCompatActivity() {
     private fun stopRecording(method: String) {
         when (method) {
             "Google" -> speechHelper.stopListening()
-            "Local Whisper" -> trTV.text = "Local Whisper coming soon..."
+            "Whisper" -> whisperHelper.stop()
             "Vosk" -> voskHelper.stop()
             else -> trTV.text = getString(R.string.unknown_method_selected)
         }
@@ -189,11 +341,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateFabIcon() {
+        if (isRecording) {
+            micToggle.setImageResource(R.drawable.microphone)
+            micToggle.backgroundTintList = ContextCompat.getColorStateList(this, R.color.red)
+        } else {
+            micToggle.setImageResource(R.drawable.microphone_off)
+            micToggle.backgroundTintList = ContextCompat.getColorStateList(this, R.color.blue)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reload model path in case it was changed in ModelHelper
+        val sharedPrefs = getSharedPreferences("ModelSettings", Context.MODE_PRIVATE)
+        modelPath = sharedPrefs.getString("selected_model_path", "") ?: ""
+        android.util.Log.d("MainActivity", "Model path reloaded: $modelPath")
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         speechHelper.destroy()
         voskHelper.destroy()
+        whisperHelper.destroy()
     }
-
 
 }

@@ -8,21 +8,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="@string/app_name"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="2dp"
         android:hint="@string/select_method"
-        android:textColorHint="@color/white">
+        android:textColorHint="@color/white"
+        app:boxStrokeColor="@color/white"
+        app:hintTextColor="@color/white">
 
         <AutoCompleteTextView
             android:hint="@string/select_method"
             android:id="@+id/spMethod"
+            style="@style/CustomAutoCompleteTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="none"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            android:popupBackground="@color/blueDarker"
+            android:dropDownHeight="wrap_content" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <RadioGroup
@@ -32,16 +44,23 @@
         android:orientation="horizontal"
         android:layout_marginTop="8dp" />
 
-    <ToggleButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/microSwitch"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:background="@drawable/toggle_selector"
-        android:textOff=""
-        android:textOn="" />
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:contentDescription="@string/microphone_toggle"
+        app:fabSize="auto"
+        app:fabCustomSize="80dp"
+        app:maxImageSize="48dp"
+        app:elevation="8dp"
+        app:hoveredFocusedTranslationZ="16dp"
+        app:pressedTranslationZ="12dp"
+        app:rippleColor="@color/white"
+        app:tint="@color/white"
+        app:backgroundTint="@color/blue" />
 
     <ScrollView
         android:layout_width="match_parent"

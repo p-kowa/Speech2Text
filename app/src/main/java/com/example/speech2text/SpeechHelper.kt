@@ -23,7 +23,7 @@ class SpeechHelper(
     private var isListening = false
     private var shouldContinue = false // Flag for continuous recording
     private var currentLanguageCode = "de-DE" // Remember current language
-    private var entireText : String = ""
+    var entireText : String = ""
 
     // AudioManager to mute system sounds
     private val audioManager: AudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager

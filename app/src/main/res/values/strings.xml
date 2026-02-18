@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Speech2Text</string>
     <string name="toggle_microphone">Microphone ON / OFF</string>
+    <string name="microphone_toggle">Toggle microphone</string>
     <string name="select_method">""</string>
     <string name="share_transcription">Share transcription</string>
     <string name="error_microphone_permission_denied">Microphone permission denied - cannot start recording. Grant permission in settings.</string>
@@ -9,4 +10,19 @@
     <string name="info_recording">Recording...</string>
     <string name="info_not_recording">Not recording</string>
     <string name="unknown_method_selected">Unknown method selected</string>
+    <string name="text_cleared">🗑️ Text cleared</string>
+    <string name="sharing_text">📤 Sharing text...</string>
+    <string name="setup">setup</string>
+    <string name="error_str">❌: %s</string>
+    <string name="model_url">https://huggingface.co/ggerganov/whisper.cpp/tree/main</string>
+    <string name="model_url_hint">Enter url for whisper models</string>
+    <string name="available_models">Available Models:</string>
+    <string name="selected_model_load">Load Selected Model</string>
+    <string name="model_source_label">Model Source (URL):</string>
+    <string name="btn_load_models">Load Models</string>
+    <string name="btn_save_text">Save Model</string>
+    <string name="please_enter_a_url">Please enter a URL</string>
+    <string name="btn_save_url">Save URL</string>
+    <string name="no_model_selected">⚠️ No model selected. Opening model selection...</string>
+    <string name="model_name_text">Model Name</string>
 </resources>
