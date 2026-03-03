@@ -25,4 +25,5 @@
     <string name="btn_save_url">Save URL</string>
     <string name="no_model_selected">⚠️ No model selected. Opening model selection...</string>
     <string name="model_name_text">Model Name</string>
+    <string name="voice">" "</string>
 </resources>

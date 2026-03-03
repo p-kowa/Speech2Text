@@ -30,15 +30,10 @@ class ModelHelper : AppCompatActivity() {
 
     private lateinit var getModels : Button
     private lateinit var saveModel : Button
-
     private lateinit var editUrl : EditText
-
     private lateinit var modelListView : RecyclerView
-
     private lateinit var modelAdapter: ModelListAdapter
-
     private lateinit var sharedPrefs : android.content.SharedPreferences
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,9 +95,7 @@ class ModelHelper : AppCompatActivity() {
             .trimEnd('/')
 
         val apiUrl = "https://huggingface.co/api/models/$repoId"
-
         fetchJsonFromApi(apiUrl)
-
     }
 
     private fun fetchJsonFromApi(apiUrl: String) {
@@ -178,8 +171,6 @@ class ModelHelper : AppCompatActivity() {
 
         return file.absolutePath
     }
-
-
 }
 
 class ModelListAdapter(
@@ -206,9 +197,7 @@ class ModelListAdapter(
         return ModelViewHolder(view)
     }
 
-
     override fun getItemCount() = models.size
-
 
     override fun onBindViewHolder(holder: ModelViewHolder, position: Int) {
         val modelName = models[position]
@@ -216,7 +205,6 @@ class ModelListAdapter(
         val isSelected = position == selectedPosition
         holder.bind(modelName, isSelected)
     }
-
     inner class ModelViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvName: TextView = itemView.findViewById(R.id.tv_model_name)
 
@@ -238,6 +226,4 @@ class ModelListAdapter(
             }
         }
     }
-
-
 }

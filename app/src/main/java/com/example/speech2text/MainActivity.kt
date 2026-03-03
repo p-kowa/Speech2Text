@@ -33,17 +33,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tiTV : TextView
     private lateinit var rgLanguage : RadioGroup
     private lateinit var speechHelper: SpeechHelper
-
     private lateinit var shareButton : ImageButton
-
     private lateinit var whisperHelper: WhisperHelper
-
     private lateinit var voskHelper: VoskHelper
     private val permissionManager = PermissionManager(activityResultRegistry, this)
 
     var modelPath : String =""
-
-
 
     // Track recording state
     private var isRecording = false
@@ -280,6 +275,10 @@ class MainActivity : AppCompatActivity() {
         try {
             if (item.itemId == R.id.mSetup) {
                 val intent = android.content.Intent(this, ModelHelper::class.java)
+                startActivity(intent)
+            }
+            if (item.itemId == R.id.mVoice){
+                val intent = android.content.Intent(this, VoiceCloning::class.java)
                 startActivity(intent)
             }
 
