@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/blueDarker">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical">
+
+        <!-- Recording Icon -->
+        <ImageView
+            android:id="@+id/iv_recording_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/microphone"
+            android:contentDescription="@string/microphone_toggle"
+            app:tint="@color/white"
+            android:padding="8dp"/>
+
+        <!-- Recording Info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/tv_recording_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="voice_German_123456.wav"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1"/>
+
+            <TextView
+                android:id="@+id/tv_recording_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="22050 Hz • 512 KB • 2026-03-04"
+                android:textColor="#CCFFFFFF"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"/>
+
+        </LinearLayout>
+
+        <!-- Play Button -->
+        <ImageButton
+            android:id="@+id/btn_play"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_media_play"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Play recording"
+            app:tint="@color/white"
+            android:padding="8dp"/>
+
+        <!-- Delete Button -->
+        <ImageButton
+            android:id="@+id/btn_delete"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete recording"
+            app:tint="@android:color/holo_red_light"
+            android:padding="8dp"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
+

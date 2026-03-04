@@ -34,11 +34,9 @@ class WhisperHelper(
     var silenceThresholdDb: Double = -40.0 // dB threshold for silence (lower = more sensitive)
     var silenceDurationMs: Long = 2000L // Stop after 2 seconds of silence
     var minRecordingDurationMs: Long = 1000L // Minimum recording time before VAD can trigger
-
     // Toggle between WAV file mode (false) and buffer mode (true)
     var useBufferMode: Boolean = true // Buffer mode is more efficient
 
-    //private var customModelPath : String  = ""
 
     private lateinit var modelFile : File
 
@@ -52,6 +50,7 @@ class WhisperHelper(
             System.loadLibrary("native-lib")
         }
     }
+
 
     fun start(languageCode: String = "de") {
 
@@ -467,6 +466,7 @@ class WhisperHelper(
     )
 
     fun stop() {
+        android.util.Log.d("WhisperHelper", "stop() called - stopping recording")
         isRecording = false
         recordingJob?.cancel()
         onStatus("🎤 Whisper stopped")
@@ -480,5 +480,4 @@ class WhisperHelper(
         }
     }
 }
-
 

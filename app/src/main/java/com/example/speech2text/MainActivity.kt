@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -21,15 +22,19 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlin.math.abs
 import android.content.Context
+import com.google.android.material.chip.Chip
 import android.widget.Toast
-import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var micToggle : FloatingActionButton
     private lateinit var methodSelector : AutoCompleteTextView
-    private lateinit var trTV : TextView
+    private lateinit var erTV : EditText
     private lateinit var tiTV : TextView
     private lateinit var rgLanguage : RadioGroup
     private lateinit var speechHelper: SpeechHelper
@@ -37,14 +42,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var whisperHelper: WhisperHelper
     private lateinit var voskHelper: VoskHelper
     private val permissionManager = PermissionManager(activityResultRegistry, this)
+    private lateinit var gestureDetector: GestureDetector
+
+    private lateinit var chipImprove: Chip
+    private lateinit var chipSummarize: Chip
+    private lateinit var chipTranslate1: Chip
+    private lateinit var chipTranslate2: Chip
+    private lateinit var chipAskQuestion: Chip
+
+    private lateinit var geminiHelper: GeminiHelper
+
+    private var translate1Language: String = "English"
+    private var translate2Language: String = "German"
+    private var originalText: String = "" // Store original text for translations
 
     var modelPath : String =""
-
-    // Track recording state
-    private var isRecording = false
-
-    // Gesture detector for swipe actions (initialized in onCreate)
-    private lateinit var gestureDetector: GestureDetector
+    var isRecording = false
 
     // Currently selected language
     private val selectedLanguage: String
@@ -94,14 +107,12 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_main)
         val methods = resources.getStringArray(R.array.methods)
-        micToggle = findViewById(R.id.microSwitch)
-        methodSelector = findViewById(R.id.spMethod)
-        trTV = findViewById(R.id.tvResult)
-        tiTV = findViewById(R.id.tvInfo)
-        rgLanguage = findViewById(R.id.rgLanguage)
-        shareButton = findViewById(R.id.btnShare)
+
+        initializeViews()
+
+
 
         val sharedPrefs = this.getSharedPreferences("ModelSettings", Context.MODE_PRIVATE)
         modelPath = sharedPrefs.getString("selected_model_path", "") ?: ""
@@ -111,6 +122,7 @@ class MainActivity : AppCompatActivity() {
         window.navigationBarColor = getColor(R.color.blueLight)
         window.statusBarColor = getColor(R.color.blueLight)
         setSupportActionBar(toolbar)
+
         // Initialize FAB icon
         updateFabIcon()
 
@@ -130,14 +142,14 @@ class MainActivity : AppCompatActivity() {
                 if (abs(diffX) > SWIPE_THRESHOLD && abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
                     if (diffX > 0) {
                         // Swipe RIGHT - Clear text
-                        trTV.text = ""
+                        erTV.setText("")
                         speechHelper.entireText = ""
                         voskHelper.entireText = ""
                         whisperHelper.entireText = ""
                         tiTV.text = getString(R.string.text_cleared)
                     } else {
                         // Swipe LEFT - Share text
-                        val textToShare = trTV.text.toString()
+                        val textToShare = erTV.text.toString()
                         if (textToShare.isNotBlank()) {
                             val shareIntent = android.content.Intent().apply {
                                 action = android.content.Intent.ACTION_SEND
@@ -158,7 +170,7 @@ class MainActivity : AppCompatActivity() {
 
         voskHelper = VoskHelper(
             context = this,
-            onResult = { text -> trTV.text = text },
+            onResult = { text -> erTV.setText(text) },
             onPartialResult = { text -> tiTV.text = text },
             onStatus = { status -> tiTV.text = status },
             onError = { error ->
@@ -193,7 +205,7 @@ class MainActivity : AppCompatActivity() {
         speechHelper = SpeechHelper(
             context = this,
             onStatusChange = { status -> tiTV.text = status },
-            onResult = { text -> trTV.text = text },
+            onResult = { text -> erTV.setText(text) },
             onError = { error ->
                 tiTV.text = error
                 isRecording = false
@@ -205,7 +217,7 @@ class MainActivity : AppCompatActivity() {
         whisperHelper = WhisperHelper(
             context = this,
             onStatus = { status -> tiTV.text = status },
-            onResult = { text -> trTV.text = text },
+            onResult = { text -> erTV.setText(text) },
             onPartialResult = { text -> tiTV.text = text },
             onError = { error ->
                 tiTV.text = error
@@ -214,7 +226,32 @@ class MainActivity : AppCompatActivity() {
                 methodSelector.isEnabled = true
             }
         )
+        initializeListeners()
+        geminiHelper = GeminiHelper(this)
+        configureTranslateButtons()
 
+        // Show Gemini model info if API key is configured
+        if (geminiHelper.hasApiKey()) {
+            tiTV.text = geminiHelper.getModelSummary()
+        }
+
+    }
+
+    private fun initializeViews() {
+        micToggle = findViewById(R.id.microSwitch)
+        methodSelector = findViewById(R.id.spMethod)
+        erTV = findViewById(R.id.evResult)
+        tiTV = findViewById(R.id.tvInfo)
+        rgLanguage = findViewById(R.id.rgLanguage)
+        shareButton = findViewById(R.id.btnShare)
+        chipImprove = findViewById(R.id.chip_improve)
+        chipSummarize = findViewById(R.id.chip_summarize)
+        chipTranslate1 = findViewById(R.id.chip_translate_1)
+        chipTranslate2 = findViewById(R.id.chip_translate_2)
+        chipAskQuestion = findViewById(R.id.chip_ask_question)
+    }
+
+    private fun initializeListeners(){
         micToggle.setOnClickListener {
             val method = methodSelector.text.toString()
             permissionManager.checkAudioPermission(
@@ -235,13 +272,13 @@ class MainActivity : AppCompatActivity() {
                     updateFabIcon()
                 },
                 onDenied = {
-                    trTV.text = getString(R.string.error_microphone_permission_denied)
+                    erTV.setText(getString(R.string.error_microphone_permission_denied))
                 }
             )
         }
 
         shareButton.setOnClickListener {
-            val textToShare = trTV.text.toString()
+            val textToShare = erTV.text.toString()
             if (textToShare.isNotBlank()) {
                 val shareIntent = android.content.Intent().apply {
                     action = android.content.Intent.ACTION_SEND
@@ -254,17 +291,90 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Setup swipe gestures on the transcription TextView
-        trTV.setOnTouchListener { view, event ->
+        // Setup swipe gestures on the transcription EditText
+        @SuppressLint("ClickableViewAccessibility")
+        erTV.setOnTouchListener { view, event ->
             val handled = gestureDetector.onTouchEvent(event)
 
-            if (!handled && event.action == MotionEvent.ACTION_UP) {
-                view.performClick()
+            // If gesture was not handled (no swipe), let EditText handle it normally for editing
+            if (!handled) {
+                view.onTouchEvent(event)
             }
-            true // Consume the event
+            false // Don't consume the event, let EditText handle it for editing
         }
-    }
 
+        chipImprove.setOnClickListener {
+            if(!geminiHelper.hasApiKey()) {
+                openGeminiKeyDialog()
+            } else {
+                val text = erTV.text.toString().trim()
+                if (text.isEmpty()) {
+                    Toast.makeText(this, R.string.input_text_empty, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                executeGeminiTask(updateOriginal = true) {
+                    geminiHelper.improveText(text)
+                }
+            }
+        }
+
+        chipSummarize.setOnClickListener {
+            if(!geminiHelper.hasApiKey()) {
+                openGeminiKeyDialog()
+            } else {
+                val text = erTV.text.toString().trim()
+                if (text.isEmpty()) {
+                    Toast.makeText(this, R.string.input_text_empty, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                executeGeminiTask(updateOriginal = true) {
+                    geminiHelper.summarizeText(text)
+                }
+            }
+        }
+
+        chipTranslate1.setOnClickListener {
+            if(!geminiHelper.hasApiKey()) {
+                openGeminiKeyDialog()
+            } else {
+                val text = if (originalText.isEmpty()) erTV.text.toString().trim() else originalText
+                if (text.isEmpty()) {
+                    Toast.makeText(this, R.string.input_text_empty, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                executeTranslate(text, translate1Language)
+            }
+        }
+
+        chipTranslate2.setOnClickListener {
+            if(!geminiHelper.hasApiKey()) {
+                openGeminiKeyDialog()
+            } else {
+                val text = if (originalText.isEmpty()) erTV.text.toString().trim() else originalText
+                if (text.isEmpty()) {
+                    Toast.makeText(this, R.string.input_text_empty, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                executeTranslate(text, translate2Language)
+            }
+        }
+
+        chipAskQuestion.setOnClickListener {
+            if(!geminiHelper.hasApiKey()) {
+                openGeminiKeyDialog()
+            } else {
+                val text = erTV.text.toString().trim()
+                if (text.isEmpty()) {
+                    Toast.makeText(this, R.string.input_text_empty, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                executeAskQuestion(text)
+            }
+        }
+
+    }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.s2t_menu, menu)
@@ -278,8 +388,20 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             if (item.itemId == R.id.mVoice){
-                val intent = android.content.Intent(this, VoiceCloning::class.java)
-                startActivity(intent)
+                val selectedId = rgLanguage.checkedRadioButtonId
+                if (selectedId != -1) {
+                    val index = rgLanguage.indexOfChild(findViewById(selectedId))
+                    val languageName = resources.getStringArray(R.array.languages)[index]
+                    val intent = android.content.Intent(this, VoiceCloning::class.java)
+                    intent.putExtra("language_name", languageName)
+                    intent.putExtra("language_code", selectedLanguage)
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this, "Please select a language first", Toast.LENGTH_SHORT).show()
+                }
+            }
+            if (item.itemId == R.id.mGemini) {
+                openGeminiKeyDialog()
             }
 
         } catch (ex: Exception) {
@@ -304,7 +426,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             "Vosk" -> voskHelper.start(selectedVoskModel)
-            else -> trTV.text = getString(R.string.unknown_method_selected)
+            else -> erTV.setText(getString(R.string.unknown_method_selected))
         }
     }
 
@@ -313,7 +435,7 @@ class MainActivity : AppCompatActivity() {
             "Google" -> speechHelper.stopListening()
             "Whisper" -> whisperHelper.stop()
             "Vosk" -> voskHelper.stop()
-            else -> trTV.text = getString(R.string.unknown_method_selected)
+            else -> erTV.setText(getString(R.string.unknown_method_selected))
         }
     }
 
@@ -330,6 +452,11 @@ class MainActivity : AppCompatActivity() {
                 setPadding(0, 8, 32, 8)
             }
             rgLanguage.addView(radioButton)
+        }
+
+        // Add listener to update translate buttons when language changes
+        rgLanguage.setOnCheckedChangeListener { _, _ ->
+            configureTranslateButtons()
         }
     }
 
@@ -363,6 +490,163 @@ class MainActivity : AppCompatActivity() {
         speechHelper.destroy()
         voskHelper.destroy()
         whisperHelper.destroy()
+    }
+
+    private fun openGeminiKeyDialog() {
+        val dialog = GeminiKeyDialog(geminiHelper) {
+            // Callback after key is saved - you can add any additional logic here
+            tiTV.text = getString(R.string.api_key_saved)
+        }
+        dialog.show(supportFragmentManager, "GeminiKeyDialog")
+    }
+
+    private fun executeGeminiTask(updateOriginal: Boolean = false, task: suspend () -> Result<String>) {
+        if (!geminiHelper.hasApiKey()) {
+            Toast.makeText(this, R.string.api_key_not_configured, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // Show progress
+        setChipsEnabled(false)
+        tiTV.text = getString(R.string.processing)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    task()
+                }
+
+                result.onSuccess { text ->
+                    erTV.setText(text)
+
+                    // Show token info and operation status
+                    val tokenInfo = geminiHelper.getTokenInfo(text)
+                    tiTV.text = "✅ ${getString(R.string.operation_successful)} | $tokenInfo"
+
+                    // Update original text if needed (for Improve/Summarize)
+                    if (updateOriginal) {
+                        originalText = text
+                    }
+                }.onFailure { error ->
+                    val errorMsg = error.message ?: "Unknown error"
+                    tiTV.text = getString(R.string.error_prefix) + " $errorMsg"
+
+                    // Check if it's a token limit error
+                    if (errorMsg.contains("MAX_TOKENS", ignoreCase = true)) {
+                        Toast.makeText(this@MainActivity,
+                            "⚠️ Token limit reached! Try shorter text or increase maxOutputTokens.",
+                            Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this@MainActivity,
+                            getString(R.string.gemini_error) + ": $errorMsg",
+                            Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                tiTV.text = getString(R.string.error_prefix) + " ${e.message}"
+                Toast.makeText(this@MainActivity,
+                    getString(R.string.unexpected_error) + ": ${e.message}",
+                    Toast.LENGTH_LONG).show()
+            } finally {
+                setChipsEnabled(true)
+            }
+        }
+    }
+
+    private fun executeTranslate(text: String, targetLanguage: String) {
+        executeGeminiTask {
+            geminiHelper.translateText(text, targetLanguage)
+        }
+    }
+
+    private fun executeAskQuestion(text: String) {
+        if (!geminiHelper.hasApiKey()) {
+            Toast.makeText(this, R.string.api_key_not_configured, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // Disable button during processing
+        chipAskQuestion.isEnabled = false
+        tiTV.text = getString(R.string.processing)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    geminiHelper.answerQuestion(text)
+                }
+
+                result.onSuccess { answer ->
+                    // Antwort ersetzt den Inhalt von erTV
+                    erTV.setText(answer)
+
+                    // Show token info and success status
+                    val tokenInfo = geminiHelper.getTokenInfo(answer)
+                    tiTV.text = "✅ ${getString(R.string.answer_added)} | $tokenInfo"
+                }.onFailure { error ->
+                    val errorMsg = error.message ?: "Unknown error"
+                    tiTV.text = getString(R.string.error_prefix) + " $errorMsg"
+
+                    // Check if it's a token limit error
+                    if (errorMsg.contains("MAX_TOKENS", ignoreCase = true)) {
+                        Toast.makeText(this@MainActivity,
+                            "⚠️ Token limit reached! Answer was too long. Try a shorter question or increase maxOutputTokens.",
+                            Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this@MainActivity,
+                            getString(R.string.gemini_error) + ": $errorMsg",
+                            Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                tiTV.text = getString(R.string.error_prefix) + " ${e.message}"
+                Toast.makeText(this@MainActivity,
+                    getString(R.string.unexpected_error) + ": ${e.message}",
+                    Toast.LENGTH_LONG).show()
+            } finally {
+                chipAskQuestion.isEnabled = true
+            }
+        }
+    }
+
+    private fun setChipsEnabled(enabled: Boolean) {
+        chipImprove.isEnabled = enabled
+        chipSummarize.isEnabled = enabled
+        chipTranslate1.isEnabled = enabled
+        chipTranslate2.isEnabled = enabled
+        chipAskQuestion.isEnabled = enabled
+    }
+
+    private fun configureTranslateButtons() {
+        when {
+            selectedLanguage.startsWith("de") -> {
+                // Deutsch gewählt -> Übersetze zu English und Polski
+                translate1Language = "English"
+                translate2Language = "Polish"
+                chipTranslate1.text = getString(R.string.translate_to_en)
+                chipTranslate2.text = getString(R.string.translate_to_pl)
+            }
+            selectedLanguage.startsWith("en") -> {
+                // English gewählt -> Übersetze zu Deutsch und Polski
+                translate1Language = "German"
+                translate2Language = "Polish"
+                chipTranslate1.text = getString(R.string.translate_to_de)
+                chipTranslate2.text = getString(R.string.translate_to_pl)
+            }
+            selectedLanguage.startsWith("pl") -> {
+                // Polski gewählt -> Übersetze zu English und Deutsch
+                translate1Language = "English"
+                translate2Language = "German"
+                chipTranslate1.text = getString(R.string.translate_to_en)
+                chipTranslate2.text = getString(R.string.translate_to_de)
+            }
+            else -> {
+                // Fallback
+                translate1Language = "English"
+                translate2Language = "German"
+                chipTranslate1.text = getString(R.string.translate_to_en)
+                chipTranslate2.text = getString(R.string.translate_to_de)
+            }
+        }
     }
 
 }

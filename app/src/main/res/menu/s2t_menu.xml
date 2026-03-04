@@ -15,4 +15,12 @@
         app:showAsAction="ifRoom"
         android:visible="true"
         android:enabled="true"/>
+    <item
+        android:id="@+id/mGemini"
+        android:title="@string/use_ai"
+        android:icon="@android:drawable/ic_menu_info_details"
+        app:showAsAction="ifRoom"
+        android:visible="true"
+        android:enabled="true"/>
 </menu>
+

@@ -1,8 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:padding="16dp"
     android:background="@drawable/background_shape"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar_clonevoice"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="@string/clone_voice"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip_new_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="@string/create_text"
+        android:textColor="@color/white"
+        app:chipBackgroundColor="@color/blue"
+        app:chipCornerRadius="16dp"
+        app:chipIconTint="@color/white"
+        app:chipMinHeight="40dp"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_clonevoice"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:id="@+id/tv_recording_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        app:layout_constraintTop_toBottomOf="@+id/chip_new_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </TextView>
+
+    <TextView
+        android:id="@+id/text_to_read"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@color/blueDarker"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf ="@+id/tv_recording_info"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="1dp"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/microSwitchVoiceClone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/microphone_toggle"
+        app:fabSize="auto"
+        app:fabCustomSize="80dp"
+        app:maxImageSize="48dp"
+        app:elevation="8dp"
+        app:hoveredFocusedTranslationZ="16dp"
+        app:pressedTranslationZ="12dp"
+        app:rippleColor="@color/white"
+        app:tint="@color/white"
+        app:backgroundTint="@color/blue"
+        app:layout_constraintTop_toBottomOf="@+id/text_to_read"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_recording_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/records_list"
+        app:layout_constraintTop_toBottomOf="@+id/microSwitchVoiceClone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </TextView>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_recordings"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/tv_recording_status"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

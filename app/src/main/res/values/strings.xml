@@ -26,4 +26,48 @@
     <string name="no_model_selected">⚠️ No model selected. Opening model selection...</string>
     <string name="model_name_text">Model Name</string>
     <string name="voice">" "</string>
+
+    <!-- Gemini Integration -->
+    <string name="gemini_title">AI Assistant (Gemini)</string>
+    <string name="gemini_api_key_title">API Configuration</string>
+    <string name="api_key_not_configured">❌ API Key not configured</string>
+    <string name="api_key_configured">✅ API Key configured</string>
+    <string name="api_key_info">Get your free API key from: https://makersuite.google.com/app/apikey</string>
+    <string name="api_key_hint">Enter your Gemini API Key</string>
+    <string name="save_api_key">Save API Key</string>
+    <string name="api_key_empty">Please enter an API key</string>
+    <string name="api_key_saved">API Key saved successfully</string>
+    <string name="input_text_label">Text to Process</string>
+    <string name="input_text_hint">Enter or paste text here...</string>
+    <string name="input_text_empty">Please enter some text</string>
+    <string name="actions_label">Actions</string>
+    <string name="improve_text">✨ Improve</string>
+    <string name="summarize_text">📝 Summarize</string>
+    <string name="translate_to_en">🇬🇧 → English</string>
+    <string name="translate_to_de">🇩🇪 → German</string>
+    <string name="translate_to_pl">🇵🇱 → Polish</string>
+    <string name="ask_question_label">Ask a question about the text:</string>
+    <string name="question_hint">What would you like to know?</string>
+    <string name="question_empty">Please enter a question</string>
+    <string name="ask_question">❓ Answer</string>
+    <string name="answer_added">✅ Answer added to text</string>
+    <string name="operation_successful">✅ Operation successful</string>
+    <string name="result_label">Result:</string>
+    <string name="result_placeholder">Results will appear here...</string>
+    <string name="processing">⏳ Processing with AI...</string>
+    <string name="error_prefix">❌ Error:</string>
+    <string name="gemini_error">AI processing error</string>
+    <string name="unexpected_error">Unexpected error</string>
+    <string name="use_ai">🤖 AI Assistant</string>
+    <string name="clear_text">🧹 Clear</string>
+    <string name="clone_voice">Save Voice</string>
+    <string name="create_text">✍️ Create text</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="records_list">🎙️ Recordings</string>
+
+    <!-- Voice Cloning -->
+    <string name="export_training_data">💾 Export Training Data</string>
+    <string name="training_stats">📊 Statistics</string>
 </resources>
+

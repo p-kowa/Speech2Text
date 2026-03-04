@@ -9,7 +9,7 @@
     android:layout_height="match_parent">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/toolbar_main"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:title="@string/app_name"
@@ -69,14 +69,24 @@
         android:background="@color/blueLight"
         android:fillViewport="true">
 
-        <TextView
-            android:id="@+id/tvResult"
+        <EditText
+            android:id="@+id/evResult"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:padding="12dp"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:background="@android:color/transparent"
+            android:inputType="textMultiLine|textNoSuggestions"
+            android:gravity="top|start"
+            android:hint="@string/info_not_recording"
+            android:textColorHint="#88FFFFFF"
+            android:importantForAutofill="no"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+            android:minHeight="200dp" />
     </ScrollView>
+
 
     <View
         android:layout_width="match_parent"
@@ -111,5 +121,91 @@
             android:src="@android:drawable/ic_menu_share"
             app:tint="@color/white" />
     </FrameLayout>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginBottom="2dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_actions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true"
+            app:chipSpacing="8dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_improve"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/improve_text"
+                android:textColor="@color/white"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipIcon="@android:drawable/ic_menu_edit"
+                app:chipIconTint="@color/white"
+                app:chipBackgroundColor="@color/blue"
+                app:chipCornerRadius="16dp"
+                app:chipMinHeight="40dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_summarize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/summarize_text"
+                android:textColor="@color/white"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipIcon="@android:drawable/ic_menu_sort_by_size"
+                app:chipIconTint="@color/white"
+                app:chipBackgroundColor="@color/blue"
+                app:chipCornerRadius="16dp"
+                app:chipMinHeight="40dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_translate_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/translate_to_en"
+                android:textColor="@color/white"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipIcon="@android:drawable/ic_menu_compass"
+                app:chipIconTint="@color/white"
+                app:chipBackgroundColor="@color/blue"
+                app:chipCornerRadius="16dp"
+                app:chipMinHeight="40dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_translate_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/translate_to_de"
+                android:textColor="@color/white"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipIcon="@android:drawable/ic_menu_compass"
+                app:chipIconTint="@color/white"
+                app:chipBackgroundColor="@color/blue"
+                app:chipCornerRadius="16dp"
+                app:chipMinHeight="40dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_ask_question"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ask_question"
+                android:textColor="@color/white"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipIcon="@android:drawable/ic_menu_help"
+                app:chipIconTint="@color/white"
+                app:chipBackgroundColor="@color/blue"
+                app:chipCornerRadius="16dp"
+                app:chipMinHeight="40dp"/>
+
+
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
 
 </LinearLayout>

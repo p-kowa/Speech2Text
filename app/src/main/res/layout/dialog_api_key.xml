@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <com.google.android.material.card.MaterialCardView
+
+        android:id="@+id/card_api_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/background_shape"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/gemini_api_key_title"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_api_key_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/api_key_not_configured"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_model_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Model: gemini-2.5-flash"
+                android:textSize="12sp"
+                android:textStyle="italic"
+                android:textColor="?android:attr/textColorSecondary"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/api_key_info"
+                android:textSize="12sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:layout_marginBottom="12dp"/>
+
+            <EditText
+                android:id="@+id/et_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/api_key_hint"
+                android:inputType="textPassword"
+                android:importantForAutofill="no"
+                android:layout_marginBottom="12dp"/>
+
+            <Button
+                android:id="@+id/btn_save_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/save_api_key"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

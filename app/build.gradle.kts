@@ -5,9 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.speech2text"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.speech2text"
@@ -32,7 +30,8 @@ android {
             abiFilters += listOf("arm64-v8a")
         }
     }
-	externalNativeBuild {
+
+    externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
         }
@@ -55,13 +54,22 @@ android {
             }
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
+
+
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true   // <--- ViewBinding aktivieren
+    }
+
 }
 
 dependencies {
@@ -71,6 +79,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation("com.alphacephei:vosk-android:0.3.47")
+    implementation(libs.generativeai)
 	testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
