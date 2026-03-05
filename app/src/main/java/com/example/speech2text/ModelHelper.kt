@@ -99,7 +99,7 @@ class ModelHelper : AppCompatActivity() {
     }
 
     private fun fetchJsonFromApi(apiUrl: String) {
-        Toast.makeText(this, "Lade Modell-Liste...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Loading model list...", Toast.LENGTH_SHORT).show()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {

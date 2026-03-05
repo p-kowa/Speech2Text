@@ -64,6 +64,12 @@ android {
         jvmTarget = "17"
     }
 
+    packaging {
+        resources {
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/DEPENDENCIES"
+        }
+    }
 
     buildFeatures {
         buildConfig = true
@@ -80,7 +86,11 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation("com.alphacephei:vosk-android:0.3.47")
     implementation(libs.generativeai)
-	testImplementation(libs.junit)
+    implementation("com.google.android.gms:play-services-auth:21.5.1")
+    implementation("com.google.api-client:google-api-client-android:2.7.0")
+    implementation("com.google.http-client:google-http-client-gson:1.45.1")
+    implementation("com.google.apis:google-api-services-drive:v3-rev20240914-2.0.0")
+    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

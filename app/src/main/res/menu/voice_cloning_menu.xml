@@ -12,5 +12,10 @@
         android:title="💾 Export Training Data"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_export_google"
+        android:title="☁️ Export Google Drive"
+        app:showAsAction="never" />
+
 </menu>
 

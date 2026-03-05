@@ -20,6 +20,8 @@ class VoiceCloning : AppCompatActivity() {
     private lateinit var chipNewText: Chip
     private lateinit var textToRead : TextView
 
+    private val googleHelper = GoogleHelper()
+
     private lateinit var textRecInfo : TextView
     private var selectedLanguageCode: String = "de-DE" // Default
     private var selectedLanguageName: String = "German" // Default
@@ -88,6 +90,16 @@ class VoiceCloning : AppCompatActivity() {
         if (!geminiHelper.hasApiKey()) {
             Toast.makeText(this, "Please set your Gemini API key in the settings.", Toast.LENGTH_LONG).show()
         }
+
+        googleHelper.registerSignInLauncher(
+            activity = this,
+            onSuccess = { account ->
+                Toast.makeText(this, "✅ signed as ${account.email}", Toast.LENGTH_SHORT).show()
+            },
+            onFailure = { error ->
+                Toast.makeText(this, "❌ $error", Toast.LENGTH_SHORT).show()
+            }
+        )
 
         initializeViews()
         initializeListeners()
@@ -365,8 +377,33 @@ class VoiceCloning : AppCompatActivity() {
                 showTrainingStats()
                 true
             }
+            R.id.action_export_google -> {
+                exportTrainingDataToGoogle()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun exportTrainingDataToGoogle() {
+        val csvFile = exportTrainingData() ?: return
+        val audioFiles = recordingsList
+
+        googleHelper.uploadTrainingDataToFolder(
+            activity = this,
+            trainingDataFile = csvFile,
+            audioFiles = audioFiles,
+            onProgress = { message ->
+                textRecInfo.text = message
+            },
+            onSuccess = {
+                Toast.makeText(this, "✅ Upload successful!", Toast.LENGTH_LONG).show()
+            },
+            onError = { error ->
+                Toast.makeText(this, "❌ $error", Toast.LENGTH_LONG).show()
+            }
+        )
+
     }
 
     private fun exportTrainingDataToFile() {
