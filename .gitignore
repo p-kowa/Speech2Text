@@ -17,3 +17,4 @@ local.properties
 # Whisper.cpp submodule (managed separately)
 app/src/main/cpp/whisper.cpp/
 
+/.kotlin/errors/errors-1772715753996.log
