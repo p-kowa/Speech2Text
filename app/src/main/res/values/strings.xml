@@ -12,7 +12,7 @@
     <string name="unknown_method_selected">Unknown method selected</string>
     <string name="text_cleared">🗑️ Text cleared</string>
     <string name="sharing_text">📤 Sharing text...</string>
-    <string name="setup">setup</string>
+    <string name="setup">⚙️ Setup</string>
     <string name="error_str">❌: %s</string>
     <string name="model_url">https://huggingface.co/ggerganov/whisper.cpp/tree/main</string>
     <string name="model_url_hint">Enter url for whisper models</string>
@@ -25,7 +25,7 @@
     <string name="btn_save_url">Save URL</string>
     <string name="no_model_selected">⚠️ No model selected. Opening model selection...</string>
     <string name="model_name_text">Model Name</string>
-    <string name="voice">" "</string>
+    <string name="voice">🎤 Recorder</string>
 
     <!-- Gemini Integration -->
     <string name="gemini_title">AI Assistant (Gemini)</string>
@@ -61,7 +61,7 @@
     <string name="use_ai">🤖 AI Assistant</string>
     <string name="clear_text">🧹 Clear</string>
     <string name="clone_voice">Save Voice</string>
-    <string name="create_text">✍️ Create text</string>
+    <string name="create_text">✍️ Generate</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="records_list">🎙️ Recordings</string>

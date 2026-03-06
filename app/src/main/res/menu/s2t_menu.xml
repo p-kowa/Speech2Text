@@ -5,22 +5,16 @@
         android:id ="@+id/mSetup"
         android:title="@string/setup"
         android:icon="@android:drawable/ic_menu_preferences"
-        app:showAsAction="always"
-        android:visible="true"
-        android:enabled="true"/>
+        app:showAsAction="never" />
     <item
         android:id="@+id/mVoice"
         android:title="@string/voice"
         android:icon="@android:drawable/ic_menu_add"
-        app:showAsAction="ifRoom"
-        android:visible="true"
-        android:enabled="true"/>
+        app:showAsAction="never" />
     <item
         android:id="@+id/mGemini"
         android:title="@string/use_ai"
         android:icon="@android:drawable/ic_menu_info_details"
-        app:showAsAction="ifRoom"
-        android:visible="true"
-        android:enabled="true"/>
+        app:showAsAction="never" />
 </menu>
 
