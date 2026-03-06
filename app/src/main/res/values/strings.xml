@@ -70,5 +70,6 @@
     <string name="export_training_data">💾 Export Training Data</string>
     <string name="training_stats">📊 Statistics</string>
     <string name="starting_upload">📤 Preparing upload...</string>
+    <string name="language_selection">🗺️ Language</string>
 </resources>
 

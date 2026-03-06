@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id ="@+id/mLanugage"
+        android:title="@string/language_selection"
+        android:icon="@android:drawable/ic_menu_preferences"
+        app:showAsAction="never" />
+    <item
         android:id ="@+id/mSetup"
         android:title="@string/setup"
         android:icon="@android:drawable/ic_menu_preferences"

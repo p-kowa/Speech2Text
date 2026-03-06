@@ -403,6 +403,9 @@ class MainActivity : AppCompatActivity() {
             if (item.itemId == R.id.mGemini) {
                 openGeminiKeyDialog()
             }
+            if(item.itemId == R.id.mLanugage){
+                Toast.makeText(this, "Selecte language not implemented yet", Toast.LENGTH_SHORT).show()
+            }
 
         } catch (ex: Exception) {
             tiTV.text = getString(R.string.error_str, ex.message ?: "Unknown error")
