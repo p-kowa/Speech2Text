@@ -37,12 +37,19 @@
             android:dropDownHeight="wrap_content" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <RadioGroup
-        android:id="@+id/rgLanguage"
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:scrollbars="none"
+        android:fadeScrollbars="false">
+
+        <RadioGroup
+            android:id="@+id/rgLanguage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/microSwitch"
@@ -162,33 +169,7 @@
                 app:chipCornerRadius="16dp"
                 app:chipMinHeight="40dp"/>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_translate_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/translate_to_en"
-                android:textColor="@color/white"
-                android:clickable="true"
-                android:focusable="true"
-                app:chipIcon="@android:drawable/ic_menu_compass"
-                app:chipIconTint="@color/white"
-                app:chipBackgroundColor="@color/blue"
-                app:chipCornerRadius="16dp"
-                app:chipMinHeight="40dp"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_translate_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/translate_to_de"
-                android:textColor="@color/white"
-                android:clickable="true"
-                android:focusable="true"
-                app:chipIcon="@android:drawable/ic_menu_compass"
-                app:chipIconTint="@color/white"
-                app:chipBackgroundColor="@color/blue"
-                app:chipCornerRadius="16dp"
-                app:chipMinHeight="40dp"/>
+            <!-- Translate chips werden dynamisch erstellt basierend auf verfügbaren Sprachen -->
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_ask_question"

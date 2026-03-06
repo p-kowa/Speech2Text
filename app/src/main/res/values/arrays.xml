@@ -5,16 +5,6 @@
         <item>Whisper</item>
         <item>Google</item>
     </string-array>
-    <string-array name="languages">
-        <item>🇩🇪 Deutsch</item>
-        <item>🇬🇧 English</item>
-        <item>🇵🇱 Polski</item>
-    </string-array>
-    <string-array name="language_codes">
-        <item>de-DE</item>
-        <item>en-US</item>
-        <item>pl-PL</item>
-    </string-array>
     <string-array name="vosk_models">
         <item>vosk-model-small-de-0.15</item>
         <item>vosk-model-small-en-us-0.15</item>

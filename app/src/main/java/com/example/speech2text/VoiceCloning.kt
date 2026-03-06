@@ -13,6 +13,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Locale
 
 class VoiceCloning : AppCompatActivity() {
 
@@ -23,8 +24,8 @@ class VoiceCloning : AppCompatActivity() {
     private val googleHelper = GoogleHelper()
 
     private lateinit var textRecInfo : TextView
-    private var selectedLanguageCode: String = "de-DE" // Default
-    private var selectedLanguageName: String = "German" // Default
+    private lateinit var selectedLanguage: Locale // Default
+    private lateinit var selectedLanguageName: String
     private lateinit var micToggleClone : FloatingActionButton
 
     private val permissionManager = PermissionManager(activityResultRegistry, this)
@@ -57,8 +58,8 @@ class VoiceCloning : AppCompatActivity() {
         window.statusBarColor = getColor(R.color.blueLight)
 
         // Get language from intent
-        selectedLanguageName = intent.getStringExtra("language_name") ?: "German"
-        selectedLanguageCode = intent.getStringExtra("language_code") ?: "de-DE"
+        selectedLanguage = intent.getSerializableExtra("locale") as? Locale ?: Locale.getDefault()
+        selectedLanguageName = selectedLanguage.displayLanguage
 
         // Initialize RecorderHelper for WAV recording (22050 Hz for Piper TTS)
         recorderHelper = RecorderHelper(

@@ -71,5 +71,6 @@
     <string name="training_stats">📊 Statistics</string>
     <string name="starting_upload">📤 Preparing upload...</string>
     <string name="language_selection">🗺️ Language</string>
+    <string name="select_language">Select Language</string>
 </resources>
 
