@@ -38,86 +38,22 @@ Da dein Projekt bereits auf GitHub ist (`p-kowa/Speech2Text`), kannst du das Not
 
 ---
 
-## 📤 Alternative: Upload-Script (für Google Drive)
+## 🔄 Workflow:
 
-Falls du es lieber direkt auf Google Drive haben möchtest:
-
-### Setup (einmalig):
-
-1. **Google Cloud Console öffnen:**
-   https://console.cloud.google.com
-
-2. **Neues Projekt erstellen:**
-   - Klicke auf Projekt-Dropdown → "New Project"
-   - Name: "Speech2Text Notebook"
-
-3. **Google Drive API aktivieren:**
-   - APIs & Services → Library
-   - Suche "Google Drive API"
-   - Klicke "Enable"
-
-4. **OAuth Credentials erstellen:**
-   - APIs & Services → Credentials
-   - "Create Credentials" → "OAuth client ID"
-   - Application type: "Desktop app"
-   - Name: "Notebook Uploader"
-   - Download als `credentials.json`
-
-5. **Script vorbereiten:**
-   ```powershell
-   # In PowerShell im Projektordner
-   cd C:\Daten\Android\Speech2Text
-   
-   # Dependencies installieren
-   pip install google-auth google-auth-oauthlib google-api-python-client
-   
-   # credentials.json hierher kopieren
-   # (Download aus Schritt 4)
-   ```
-
-6. **Notebook hochladen:**
-   ```powershell
-   python upload_notebook_to_drive.py
-   ```
-   
-   Beim ersten Mal:
-   - Browser öffnet sich
-   - Mit Google anmelden
-   - Zugriff erlauben
-   - Token wird gespeichert
-
-### Danach:
-```powershell
-# Jedes Mal wenn du das Notebook änderst:
-python upload_notebook_to_drive.py
+### GitHub → Colab (Einfach & Empfohlen)
 ```
-
-Das Script gibt dir dann einen Link zum direkten Öffnen in Colab! 🎉
-
----
-
-## 🔄 Workflow-Empfehlung:
-
-### Option A: GitHub → Colab (EMPFOHLEN)
-```
-1. Notebook lokal bearbeiten
-2. git push
-3. In Colab von GitHub öffnen
+1. Notebook lokal bearbeiten (optional)
+2. git push (wenn du Änderungen gemacht hast)
+3. In Colab von GitHub öffnen (Link oben)
 4. "Save a copy in Drive" (einmalig)
-5. Arbeiten in der Drive-Kopie
+5. Arbeite direkt in der Drive-Kopie
 ```
 
-**Vorteil:** Einfach, keine zusätzliche Software nötig
-
-### Option B: Direkter Drive Upload
-```
-1. Notebook lokal bearbeiten
-2. python upload_notebook_to_drive.py
-3. Link im Terminal kopieren
-4. In Colab öffnen
-```
-
-**Vorteil:** Schneller, kein Git-Push nötig
+**Vorteile:**
+- ✅ Keine Python-Installation auf Windows nötig
+- ✅ Keine zusätzlichen Tools erforderlich  
+- ✅ Funktioniert auf jedem Rechner mit Browser
+- ✅ Einfach und schnell
 
 ---
 
@@ -137,11 +73,17 @@ Dann kannst du das Notebook mit einem Klick öffnen! 🚀
 
 ## 📝 Zusammenfassung
 
-| Methode | Aufwand | Empfehlung |
-|---------|---------|------------|
-| GitHub → Colab | Niedrig | ⭐⭐⭐⭐⭐ Beste Wahl |
-| Upload Script | Mittel | ⭐⭐⭐ Gut für Profis |
-| Manuelles Upload | Hoch | ⭐ Nicht empfohlen |
+**Du brauchst KEINE Python-Installation auf Windows!**
 
-**Meine Empfehlung:** Nutze GitHub! Dein Projekt ist bereits dort, also ist es der einfachste Weg.
+Alles läuft direkt in Google Colab (im Browser). Einfach das Notebook von GitHub öffnen und loslegen.
+
+| Was du brauchst | Wo |
+|----------------|-----|
+| Browser | Chrome, Firefox, Edge, etc. |
+| Google Account | Für Colab & Drive |
+| GitHub Account | Bereits vorhanden ✅ |
+
+**Das war's!** Keine lokalen Installationen nötig. 🎉
+
+
 
