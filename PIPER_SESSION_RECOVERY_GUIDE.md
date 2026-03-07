@@ -16,12 +16,17 @@ The improved notebook solves the problem of losing checkpoints and training sess
 - Training automatically resumes from the last checkpoint
 - No manual checkpoint searching required
 
-### 3. **Progress Tracking**
+### 3. **Progress Tracking & Logging**
 - `session_state.json` on Google Drive stores:
   - When training was started
   - Which checkpoint was last used
   - How many epochs have been trained
   - Total training duration
+- `training_log.txt` on Google Drive logs:
+  - All training events with timestamps
+  - Checkpoint saves
+  - Errors and warnings
+  - Training completion status
   
 ### 4. **Triple-Backup Strategy**
 - Main checkpoints: `/content/drive/MyDrive/piper_training/checkpoints/`
@@ -176,6 +181,20 @@ if SESSION_STATE_FILE.exists():
     print(f"Checkpoint: {state.get('resume_from')}")
 ```
 
+### View Training Log:
+
+```python
+# View the complete training log from Google Drive
+TRAINING_LOG_FILE = Path("/content/drive/MyDrive/piper_training/training_log.txt")
+
+if TRAINING_LOG_FILE.exists():
+    with open(TRAINING_LOG_FILE, 'r', encoding='utf-8') as f:
+        log_content = f.read()
+    print(log_content)
+else:
+    print("Training log not yet created")
+```
+
 ### After Session Disconnect:
 
 ```python
@@ -272,7 +291,8 @@ After improvements:
 
 ```
 /content/drive/MyDrive/piper_training/
-├── session_state.json          # Training status
+├── session_state.json          # Training status & metadata
+├── training_log.txt             # Complete training log with timestamps
 ├── wavs/                        # Your recordings
 ├── metadata.csv                 # Training data
 ├── my_own_voice.json           # Model config
@@ -286,6 +306,24 @@ After improvements:
         └── checkpoints/
             └── epoch=100-step=1000.ckpt
 ```
+
+### Log Files Explained:
+
+**`session_state.json`**: 
+- JSON file with training metadata
+- Contains paths, timestamps, configuration
+- Used for automatic session recovery
+
+**`training_log.txt`**:
+- Human-readable log file
+- All training events with timestamps
+- Checkpoint saves, errors, warnings
+- Easy to read and share
+
+**`lightning_logs/`**:
+- PyTorch Lightning's internal logs
+- TensorBoard compatible
+- Detailed metrics and graphs
 
 ## ✨ Summary
 
