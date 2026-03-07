@@ -1,48 +1,48 @@
 # Piper Training Notebook - Session Recovery Guide
 
-## 🎯 Problem gelöst!
+## 🎯 Problem Solved!
 
-Das verbesserte Notebook löst das Problem, dass Checkpoints und Training-Sessions verloren gehen können.
+The improved notebook solves the problem of losing checkpoints and training sessions.
 
-## ✅ Neue Features
+## ✅ New Features
 
-### 1. **Checkpoint-Persistence auf Google Drive**
-- Alle Checkpoints werden direkt auf Google Drive gespeichert
-- Kein Verlust bei Session-Disconnect
-- Automatische Backups werden erstellt
+### 1. **Checkpoint Persistence on Google Drive**
+- All checkpoints are saved directly to Google Drive
+- No loss on session disconnect
+- Automatic backups are created
 
-### 2. **Automatisches Session-Recovery**
-- Wenn die Colab-Session abbricht, einfach alle Zellen neu ausführen
-- Training setzt automatisch vom letzten Checkpoint fort
-- Kein manuelles Suchen nach Checkpoints nötig
+### 2. **Automatic Session Recovery**
+- If the Colab session disconnects, simply re-run all cells
+- Training automatically resumes from the last checkpoint
+- No manual checkpoint searching required
 
-### 3. **Progress-Tracking**
-- `session_state.json` auf Google Drive speichert:
-  - Wann Training gestartet wurde
-  - Welcher Checkpoint zuletzt verwendet wurde
-  - Wie viele Epochen bereits trainiert wurden
-  - Gesamte Trainingsdauer
+### 3. **Progress Tracking**
+- `session_state.json` on Google Drive stores:
+  - When training was started
+  - Which checkpoint was last used
+  - How many epochs have been trained
+  - Total training duration
   
-### 4. **Triple-Backup-Strategie**
-- Haupt-Checkpoints: `/content/drive/MyDrive/piper_training/checkpoints/`
-- Backup-Checkpoints: `/content/drive/MyDrive/piper_training/checkpoints_backup/`
-- Lightning-Logs: `/content/drive/MyDrive/piper_training/lightning_logs/`
+### 4. **Triple-Backup Strategy**
+- Main checkpoints: `/content/drive/MyDrive/piper_training/checkpoints/`
+- Backup checkpoints: `/content/drive/MyDrive/piper_training/checkpoints_backup/`
+- Lightning logs: `/content/drive/MyDrive/piper_training/lightning_logs/`
 
-## 📋 Wie du das Notebook verbesserst
+## 📋 How to Improve Your Notebook
 
-### Option 1: Neue Zellen hinzufügen (Empfohlen)
+### Option 1: Add New Cells (Recommended)
 
-1. Öffne dein bestehendes `Piper_Voice_Training.ipynb`
-2. Füge **nach Step 9** (Configure Training Parameters) eine neue Zelle ein
-3. Kopiere den Code aus `Piper_Voice_Training_Improved.ipynb` → Erste Code-Zelle
-4. **Ersetze Step 12** (Start Training) mit der verbesserten Training-Zelle
-5. Optional: Füge die Progress Monitor-Zelle am Ende hinzu
+1. Open your existing `Piper_Voice_Training.ipynb`
+2. Insert a new cell **after Step 9** (Configure Training Parameters)
+3. Copy the code from `Piper_Voice_Training_Improved.ipynb` → First code cell
+4. **Replace Step 12** (Start Training) with the improved training cell
+5. Optional: Add the Progress Monitor cell at the end
 
-### Option 2: Manuelle Anpassungen
+### Option 2: Manual Adjustments
 
-In deinem bestehenden Notebook:
+In your existing notebook:
 
-#### A) Nach Step 9 hinzufügen:
+#### A) Add after Step 9:
 
 ```python
 # Setup checkpoint directory on Google Drive for persistence
@@ -86,7 +86,7 @@ with open(SESSION_STATE_FILE, 'w') as f:
 print(f"✅ Session recovery enabled!")
 ```
 
-#### B) Ersetze den Training-Code in Step 12:
+#### B) Replace the training code in Step 12:
 
 ```python
 import shutil
@@ -131,37 +131,37 @@ if final_checkpoints:
     print(f"✅ Checkpoints saved to Google Drive!")
 ```
 
-## 🔄 Wie Session-Recovery funktioniert
+## 🔄 How Session Recovery Works
 
-### Szenario: Session bricht ab
+### Scenario: Session Disconnects
 
-1. **Was passiert:**
-   - Colab-Session trennt Verbindung
-   - Lokale `/content/` Dateien gehen verloren
-   - **ABER:** Alle Checkpoints sind auf Google Drive gesichert!
+1. **What happens:**
+   - Colab session disconnects
+   - Local `/content/` files are lost
+   - **BUT:** All checkpoints are backed up on Google Drive!
 
-2. **Recovery-Schritte:**
+2. **Recovery Steps:**
    ```
-   1. Öffne das Notebook erneut
-   2. Runtime → Run all (oder führe alle Zellen nacheinander aus)
-   3. Das Notebook:
-      - Mountet Google Drive
-      - Findet automatisch den letzten Checkpoint
-      - Lädt die session_state.json
-      - Setzt Training fort
+   1. Reopen the notebook
+   2. Runtime → Run all (or run all cells sequentially)
+   3. The notebook will:
+      - Mount Google Drive
+      - Automatically find the last checkpoint
+      - Load session_state.json
+      - Resume training
    ```
 
-3. **Keine Daten verloren!**
-   - Alle Checkpoints sind auf Drive
-   - Progress wird fortgesetzt
-   - Keine manuelle Intervention nötig
+3. **No data lost!**
+   - All checkpoints are on Drive
+   - Progress continues
+   - No manual intervention needed
 
-## 📊 Progress überwachen
+## 📊 Monitor Progress
 
-### Während des Trainings:
+### During Training:
 
 ```python
-# Führe diese Zelle aus, um aktuellen Status zu sehen
+# Run this cell to see current status
 import json
 from pathlib import Path
 
@@ -176,10 +176,10 @@ if SESSION_STATE_FILE.exists():
     print(f"Checkpoint: {state.get('resume_from')}")
 ```
 
-### Nach Session-Disconnect:
+### After Session Disconnect:
 
 ```python
-# Überprüfe, ob Checkpoints vorhanden sind
+# Check if checkpoints are present
 import glob
 from pathlib import Path
 
@@ -193,32 +193,32 @@ for ckpt in sorted(checkpoints, key=lambda x: x.stat().st_mtime, reverse=True):
 
 ## 🎓 Best Practices
 
-### 1. **Vor dem Training:**
-- Stelle sicher, dass Google Drive gemountet ist
-- Überprüfe verfügbaren Speicherplatz
-- Checkpoints benötigen ~500MB - 2GB
+### 1. **Before Training:**
+- Ensure Google Drive is mounted
+- Check available storage space
+- Checkpoints require ~500MB - 2GB
 
-### 2. **Während des Trainings:**
-- Du kannst den Tab schließen - Training läuft weiter
-- Check alle paar Stunden den Progress
-- Google Drive speichert automatisch
+### 2. **During Training:**
+- You can close the tab - training continues
+- Check progress every few hours
+- Google Drive saves automatically
 
-### 3. **Bei Session-Verlust:**
-- Keine Panik! Checkpoints sind auf Drive
-- Einfach Notebook neu öffnen
-- Alle Zellen ausführen → Training setzt fort
+### 3. **On Session Loss:**
+- Don't panic! Checkpoints are on Drive
+- Simply reopen the notebook
+- Run all cells → Training resumes
 
-### 4. **Nach dem Training:**
-- Überprüfe beide Checkpoint-Ordner
-- Backup-Checkpoint ist in `checkpoints_backup/`
-- `session_state.json` enthält alle Details
+### 4. **After Training:**
+- Check both checkpoint folders
+- Backup checkpoint is in `checkpoints_backup/`
+- `session_state.json` contains all details
 
 ## 🛠️ Troubleshooting
 
 ### Problem: "No checkpoint found"
 
 ```python
-# Überprüfe manuell:
+# Check manually:
 from pathlib import Path
 import glob
 
@@ -240,17 +240,17 @@ for dir_path in dirs_to_check:
 ### Problem: "Session state not found"
 
 ```python
-# Erstelle manuell:
+# Create manually:
 import json
 from pathlib import Path
 from datetime import datetime
 
 SESSION_STATE_FILE = Path("/content/drive/MyDrive/piper_training/session_state.json")
 session_state = {
-    'voice_name': 'my_own_voice',  # Anpassen!
-    'language': 'pl',  # Anpassen!
+    'voice_name': 'my_own_voice',  # Adjust!
+    'language': 'pl',  # Adjust!
     'started': datetime.now().isoformat(),
-    'resume_from': None  # Oder Pfad zum Checkpoint
+    'resume_from': None  # Or path to checkpoint
 }
 
 with open(SESSION_STATE_FILE, 'w') as f:
@@ -261,40 +261,40 @@ print(f"✅ Created: {SESSION_STATE_FILE}")
 
 ### Problem: "Training starts from epoch 0"
 
-Das ist normal! PyTorch Lightning nummeriert manchmal Epochen neu. Wichtig ist:
-- Der Checkpoint wird geladen
-- Modell-Weights sind korrekt
-- Training setzt inhaltlich fort
+This is normal! PyTorch Lightning sometimes renumbers epochs. What's important:
+- The checkpoint is loaded
+- Model weights are correct
+- Training continues from the saved state
 
-## 📁 Datei-Struktur auf Google Drive
+## 📁 File Structure on Google Drive
 
-Nach der Verbesserung:
+After improvements:
 
 ```
 /content/drive/MyDrive/piper_training/
-├── session_state.json          # Training-Status
-├── wavs/                        # Deine Aufnahmen
-├── metadata.csv                 # Training-Daten
-├── my_own_voice.json           # Modell-Config
-├── checkpoints/                # Haupt-Checkpoints
+├── session_state.json          # Training status
+├── wavs/                        # Your recordings
+├── metadata.csv                 # Training data
+├── my_own_voice.json           # Model config
+├── checkpoints/                # Main checkpoints
 │   ├── my_own_voice-epoch=50.ckpt
 │   └── my_own_voice-epoch=100.ckpt
 ├── checkpoints_backup/         # Backups
 │   └── my_own_voice_final_20260307.ckpt
-└── lightning_logs/             # PyTorch Lightning Logs
+└── lightning_logs/             # PyTorch Lightning logs
     └── version_0/
         └── checkpoints/
             └── epoch=100-step=1000.ckpt
 ```
 
-## ✨ Zusammenfassung
+## ✨ Summary
 
-Mit diesen Verbesserungen:
-- ✅ Kein Checkpoint-Verlust mehr
-- ✅ Automatisches Resume nach Disconnect
-- ✅ Alle Daten sicher auf Google Drive
-- ✅ Progress-Tracking jederzeit abrufbar
-- ✅ Triple-Backup für maximale Sicherheit
+With these improvements:
+- ✅ No more checkpoint loss
+- ✅ Automatic resume after disconnect
+- ✅ All data safe on Google Drive
+- ✅ Progress tracking available anytime
+- ✅ Triple-backup for maximum safety
 
-**Du kannst jetzt beruhigt trainieren - deine Arbeit ist sicher!** 🎉
+**You can now train worry-free - your work is safe!** 🎉
 
