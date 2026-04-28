@@ -38,8 +38,12 @@ class VoiceCloning : AppCompatActivity() {
     private lateinit var recordingAdapter: RecordingAdapter
     private val recordingsList = mutableListOf<File>()
 
-    // Track generated texts to ensure variety
+    // Track generated texts to ensure variety (legacy, not used anymore)
     private val generatedTexts = mutableListOf<String>()
+
+    // NEW: Pre-generated training texts (10 at a time)
+    private val trainingTexts = mutableListOf<String>()
+    private var currentTextIndex = 0 // Which text we're currently showing/recording
 
     // Current text that will be recorded
     private var currentTextToRecord: String = ""
@@ -119,26 +123,49 @@ class VoiceCloning : AppCompatActivity() {
             chipNewText.isEnabled = false
 
             CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                textRecInfo.text = "Generating text..."
 
-                // Pass previous texts to ensure variety
-                val result = geminiHelper.generateText(selectedLanguageName, generatedTexts)
+                // If we have pre-generated texts and haven't used them all yet
+                if (trainingTexts.isNotEmpty() && currentTextIndex < trainingTexts.size) {
+                    // Show next text from the batch
+                    currentTextToRecord = trainingTexts[currentTextIndex]
+                    textToRead.text = currentTextToRecord
 
-                result.onSuccess { text ->
-                    currentTextToRecord = text
-                    textToRead.text = text
+                    currentTextIndex++
+                    updateChipButtonText()
 
-                    // Add to history for variety tracking
-                    generatedTexts.add(text)
+                    textRecInfo.text = "✅ Text ${currentTextIndex}/${trainingTexts.size} ready to record"
 
-                    // Keep only last 10 texts in memory
-                    if (generatedTexts.size > 10) {
-                        generatedTexts.removeAt(0)
+                } else {
+                    // Generate new batch of 10 texts
+                    textRecInfo.text = "⏳ Generating 10 training texts..."
+                    chipNewText.text = "⏳ Generating..."
+
+                    val result = geminiHelper.generateTrainingTexts(selectedLanguageName, 10)
+
+                    result.onSuccess { texts ->
+                        trainingTexts.clear()
+                        trainingTexts.addAll(texts)
+                        currentTextIndex = 0
+
+                        // Show first text
+                        if (trainingTexts.isNotEmpty()) {
+                            currentTextToRecord = trainingTexts[0]
+                            textToRead.text = currentTextToRecord
+                            currentTextIndex = 1
+
+                            updateChipButtonText()
+                            textRecInfo.text = "✅ Generated ${trainingTexts.size} texts. Text 1/${trainingTexts.size} ready to record"
+                        } else {
+                            textRecInfo.text = "❌ No texts generated"
+                            chipNewText.text = "🔄 Generate"
+                        }
+
+                    }.onFailure { error ->
+                        textRecInfo.text = getString(R.string.error_str, error.message)
+                        chipNewText.text = "🔄 Generate"
+                        trainingTexts.clear()
+                        currentTextIndex = 0
                     }
-
-                    textRecInfo.text = "✅ Text generated (${generatedTexts.size} total)"
-                }.onFailure { error ->
-                    textRecInfo.text = getString(R.string.error_str, error.message)
                 }
 
                 chipNewText.isEnabled = true
@@ -166,6 +193,23 @@ class VoiceCloning : AppCompatActivity() {
             )
         }
 
+    }
+
+    /**
+     * Update chip button text based on current state
+     */
+    private fun updateChipButtonText() {
+        when {
+            trainingTexts.isEmpty() -> {
+                chipNewText.text = "🔄 Generate"
+            }
+            currentTextIndex < trainingTexts.size -> {
+                chipNewText.text = "📄 Get Text ${currentTextIndex + 1}"
+            }
+            else -> {
+                chipNewText.text = "🔄 Generate"
+            }
+        }
     }
 
     private fun stopRecording() {
@@ -222,6 +266,9 @@ class VoiceCloning : AppCompatActivity() {
 
             // Clear current text after saving
             currentTextToRecord = ""
+
+            // Update button text after recording
+            updateChipButtonText()
         }
     }
 
@@ -301,14 +348,17 @@ class VoiceCloning : AppCompatActivity() {
 
             if (recordingsList.isEmpty()) {
                 textToRead.text = "No recordings yet.\n\n" +
-                        "1. Click ✍️ to generate text\n" +
-                        "2. Click 🎙️ to start recording\n" +
-                        "3. Read the text aloud\n" +
-                        "4. Click 🎙️ again to stop"
+                        "1. Click '🔄 Generate' to create 10 training texts\n" +
+                        "2. Click 🎙️ to record the shown text\n" +
+                        "3. Click '📄 Get Text X' to load the next text\n" +
+                        "4. Repeat until all 10 texts are recorded"
             } else {
                 textRecInfo.text = "${recordingsList.size} recording(s) available"
             }
         }
+
+        // Update button text on load
+        updateChipButtonText()
     }
 
     private fun showDeleteConfirmationDialog(file: File) {

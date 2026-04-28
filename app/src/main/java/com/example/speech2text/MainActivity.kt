@@ -83,15 +83,16 @@ class MainActivity : AppCompatActivity() {
         get() = selectedLanguage.language.take(2).lowercase()
 
 
-    // Currently selected Vosk model (based on the same index as selectedLanguage)
+    // Currently selected Vosk model path - read from SharedPrefs by language code
     private val selectedVoskModel: String
         get() {
-            val selectedId = rgLanguage.checkedRadioButtonId
-            if (selectedId == -1) return "vosk-model-small-de-0.15" // Fallback
-
-            val index = rgLanguage.indexOfChild(findViewById(selectedId))
-            val voskModels = resources.getStringArray(R.array.vosk_models)
-            return voskModels.getOrElse(index) { "vosk-model-small-de-0.15" }
+            val languageCode = selectedLanguage.language.lowercase()
+            val sharedPrefs = getSharedPreferences("ModelSettings", MODE_PRIVATE)
+            val modelPath = sharedPrefs.getString("vosk_model_$languageCode", "") ?: ""
+            if (modelPath.isEmpty()) {
+                android.util.Log.w("MainActivity", "No Vosk model configured for language: $languageCode. Please open Setup and download a Vosk model.")
+            }
+            return modelPath
         }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -395,7 +396,18 @@ class MainActivity : AppCompatActivity() {
                     whisperHelper.start(selectedWhisperLanguage)
                 }
             }
-            "Vosk" -> voskHelper.start(selectedVoskModel)
+            "Vosk" -> {
+                if (selectedVoskModel.isEmpty()) {
+                    tiTV.text = getString(R.string.no_vosk_model_selected, selectedLanguage.displayLanguage)
+                    val intent = android.content.Intent(this, ModelHelper::class.java)
+                    startActivity(intent)
+                    isRecording = false
+                    updateFabIcon()
+                    methodSelector.isEnabled = true
+                } else {
+                    voskHelper.start(selectedVoskModel)
+                }
+            }
             else -> erTV.setText(getString(R.string.unknown_method_selected))
         }
     }
@@ -598,15 +610,12 @@ class MainActivity : AppCompatActivity() {
         }
         translateChips.clear()
 
-        // Sammle alle verfügbaren Sprachen: currentLocale + addlocals (max 3 insgesamt)
         val allLanguages = mutableListOf<Locale>()
         allLanguages.add(currentLocale)
         allLanguages.addAll(addlocals)
 
-        // Filtere die aktuell ausgewählte Sprache heraus -> die anderen sind für die Translate-Chips
         val otherLanguages = allLanguages.filter { it.language != selectedLanguage.language }
 
-        // Erstelle dynamisch einen Chip für jede verfügbare Zielsprache
         otherLanguages.forEach { targetLocale ->
             val chip = Chip(this).apply {
                 text = "${getCountryFlag(targetLocale)} ${targetLocale.displayLanguage}"

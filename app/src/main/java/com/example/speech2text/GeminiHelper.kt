@@ -199,8 +199,69 @@ class GeminiHelper(private val context: Context) {
     }
 
     /**
-     * Generate short training text for voice cloning (2-3 sentences with phonetic variety)
-     * Each call generates different text to build a diverse training dataset
+     * Generate multiple training texts at once (10 texts, ~100 words each)
+     * For voice cloning training with better variety and longer content
+     */
+    suspend fun generateTrainingTexts(language: String, count: Int = 10): Result<List<String>> = withContext(Dispatchers.IO) {
+        if (!hasApiKey()) {
+            return@withContext Result.failure(Exception("API key not set"))
+        }
+
+        try {
+            val prompt = """
+            Generate $count DIFFERENT texts in $language for voice cloning training.
+            
+            Each text requirements:
+            - Length: ~100 words (about 1 minute reading time)
+            - Natural, fluent paragraphs with varied sentence structure
+            - Cover diverse phonemes: vowels, consonants, diphthongs, consonant clusters
+            - Mix statement, question, and exclamation sentences
+            - Use rich vocabulary (but natural, not forced)
+            - Varied topics and styles to ensure phonetic diversity
+            
+            Topics to vary between texts:
+            - Daily life stories, travel experiences, food descriptions
+            - Science explanations, historical facts, nature observations
+            - Conversations, interviews, diary entries
+            - News reports, book excerpts, philosophical thoughts
+            - Emotional narratives, humorous anecdotes, descriptive scenes
+            
+            Styles to vary:
+            - Casual conversational, formal informative, storytelling narrative
+            - Enthusiastic, calm, thoughtful, curious, descriptive
+            
+            IMPORTANT:
+            - Each text should be COMPLETELY DIFFERENT from the others
+            - Ensure maximum phonetic variety across all $count texts
+            - Return EXACTLY $count texts
+            - Separate each text with "---TEXT_SEPARATOR---"
+            - Do NOT add any comments, only the pure texts
+            
+            Generate now:
+        """.trimIndent()
+
+            val response = model?.generateContent(prompt)
+            val resultText = response?.text ?: throw Exception("No response from Gemini")
+
+            // Split by separator
+            val texts = resultText.split("---TEXT_SEPARATOR---")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() && it.length > 50 } // Filter out empty or too short texts
+
+            if (texts.isEmpty()) {
+                return@withContext Result.failure(Exception("No valid texts generated"))
+            }
+
+            Log.d(TAG, "Generated ${texts.size} training texts")
+            Result.success(texts)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating training texts: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Legacy method for single text generation - kept for backwards compatibility
      */
     suspend fun generateText(language: String, previousTexts: List<String> = emptyList()): Result<String> = withContext(Dispatchers.IO) {
         if (!hasApiKey()) {
@@ -215,21 +276,21 @@ class GeminiHelper(private val context: Context) {
             }
 
             val prompt = """
-            Generate a SHORT phonetically rich text in $language for voice cloning training.
+            Generate a phonetically rich text in $language for voice cloning training.
             
             Requirements:
-            - Length: EXACTLY 2-3 sentences (30-50 words)
-            - Each sentence should be SHORT and natural
+            - Length: ~100 words (about 1 minute reading time)
+            - Natural, fluent paragraph with varied sentence structure
             - Cover diverse phonemes: mix vowels, consonants, different sounds
             - Vary sentence types: statement, question, or exclamation
             - Natural prosody with clear punctuation
-            - Use everyday vocabulary (simple, conversational)
+            - Use rich vocabulary (but natural, not forced)
             - Make it DIFFERENT from previous texts - vary topic, style, emotion
             
             $previousContext
             
-            Topics to vary: daily life, emotions, questions, observations, actions, descriptions.
-            Styles to vary: casual, formal, excited, calm, curious, assertive.
+            Topics to vary: daily life, travel, science, history, emotions, descriptions, conversations.
+            Styles to vary: casual, formal, narrative, informative, enthusiastic, calm, curious.
             
             Return ONLY the text, no explanations or comments.
         """.trimIndent()

@@ -20,10 +20,21 @@
     <string name="selected_model_load">Load Selected Model</string>
     <string name="model_source_label">Model Source (URL):</string>
     <string name="btn_load_models">Load Models</string>
-    <string name="btn_save_text">Save Model</string>
+    <string name="btn_save_text">Download &amp; Save</string>
+    <string name="model_type_label">Model Type:</string>
+    <string name="chip_whisper">🔊 Whisper</string>
+    <string name="chip_vosk">🗣️ Vosk</string>
+    <string name="vosk_language_label">Select Language for Vosk:</string>
+    <string name="vosk_language_hint">Language</string>
+    <string name="installed_models_label">Installed Vosk Models:</string>
+    <string name="activate_model">✅ Activate</string>
+    <string name="model_active">✅ Active</string>
+    <string name="vosk_model_saved">Vosk model activated for %s</string>
+    <string name="vosk_download_url_label">Download URL (alphacephei.com):</string>
     <string name="please_enter_a_url">Please enter a URL</string>
     <string name="btn_save_url">Save URL</string>
     <string name="no_model_selected">⚠️ No model selected. Opening model selection...</string>
+    <string name="no_vosk_model_selected">⚠️ No Vosk model for %s. Please download one in Setup.</string>
     <string name="model_name_text">Model Name</string>
     <string name="voice">🎤 Recorder</string>
 
